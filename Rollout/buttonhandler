@@ -1,0 +1,523 @@
+ {{/* Trigger Type: Message Component
+      Trigger: .* */}}   
+    
+    {{if eq .CustomID "r1"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 1}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 1)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **1** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r2"}}
+    
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 2}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 2)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **2** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r3"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 3}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 3)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **3** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r4"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 4}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 4)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **4** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r5"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 5}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 5)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **5** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r6"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 6}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 6)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **6** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r7"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 7}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 7)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **7** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r8"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 8}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 8)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **8** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "r9"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 9}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 9)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **9** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rten"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 10}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 10)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **10** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "releven"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 11}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 11)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **11** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rtwelve"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 12}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 12)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **12** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rthirteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 13}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 13)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **13** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rfourteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 14}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 14)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **14** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rfifteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 15}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 15)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **15** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rsixteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 16}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 16)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **16** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rseventeen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 17}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 17)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **17** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "reightteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 18}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 18)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **18** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rnineteen"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 19}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 19)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **19** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
+    
+    {{if eq .CustomID "rtwenty"}}
+    {{$gID := .Message.ID}}
+    {{$usrID := .User.ID}}
+    {{$intToken := .Interaction.Token}}
+    {{$1 := (dbGet 808878244609654784 "rolloutparticipants").Value}}
+    {{$2 := (dbGet $gID "rolloutnumbers").Value}}
+    {{$4 := (dbGet $gID "rollouteliminated").Value}}
+     
+    {{if in $1 $usrID}}
+    {{else}}
+    {{sendResponse $intToken (complexMessage "content" "You are not part of the game." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $4 $usrID}}
+    {{sendResponse $intToken (complexMessage "content" "You have been eliminated, you cannot play." "ephemeral" true)}}
+    {{return}}
+    {{end}}
+    {{if in $2 20}}
+    {{sendResponse $intToken (complexMessage "content" "This number has already been selected." "ephemeral" true)}}
+    {{return}}
+    {{else}}
+    {{$3 := (dbSet $gID $usrID 20)}}
+    {{sendResponse $intToken (complexMessage "content" "Number **20** selected." "ephemeral" true)}}
+    {{end}}
+    {{end}}
