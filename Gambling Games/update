@@ -1,0 +1,52 @@
+{{/* Update command to add to user amount. 
+     Trigger Type: Command
+     Trigger: update
+*/}}
+
+{{$usr := .User}}
+
+{{$args := ""}}
+{{if .Message.ReferencedMessage}}
+  {{$args = (getMessage nil .Message.ReferencedMessage.ID).Embeds}}
+{{else}}
+	{{sendMessage nil "Please reply to a message with an donation."}}
+	{{return}}
+{{end}}
+
+{{$embed := index $args 0}}
+{{$get := $embed.Description}}
+{{$str := ""}}
+
+{{$finder := reFind "Successfully donated" $get}}
+
+{{if not (eq $finder "Successfully donated")}}
+{{addReactions "red_x:1218287859963007057"}}
+{{return}}
+{{end}}
+
+{{range $1:=reFindAll "[0-9]" $get}}
+{{$str = joinStr "" $str $1}}
+{{end}}
+
+{{$author := (getMessage nil .Message.ReferencedMessage.ID).Interaction.User.ID}}
+
+{{$refid := (.Message.ReferencedMessage.ID)}}
+{{$reacts := (getMessage nil .Message.ReferencedMessage.ID).Reactions}}
+{{range $40:=$reacts}}
+{{if eq $40.Emoji.ID 1280313189602558013}}
+{{addReactions "red_x:1218287859963007057"}}
+{{return}}
+{{end}}
+{{end}}
+
+{{$str1 := "gamblerollbal"}} {{/* Change "gamblerollbal" to "snakeeyesbal" "coinflipbal" "roulettebal" if for different games */}}
+{{$str2 := (str ($author))}}
+{{$key := joinStr "" $str1 $str2}}
+{{$current := (dbGet 1205270486230110330 $key).Value}}
+{{$current2 := toInt $current}}
+
+{{$value := toInt $str}}
+
+{{addMessageReactions nil $refid "falcon_sip:1280313189602558013"}}
+{{$set := (dbSet 1205270486230110330 $key (add $current2 $value))}}
+{{sendMessage nil (printf "Added %v to <@%v>'s balance to which is now %v." (humanizeThousands ($value)) ($author) (humanizeThousands (add $current2 $value)))}}

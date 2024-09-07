@@ -1,0 +1,100 @@
+{{/* Leaderboard for gamble roll, coinflip, roulette, and snake eyes games. 
+     Trigger Type: Command
+     Trigger: glb
+*/}}
+
+{{$entries := (dbTopEntries "lbcf" 5 0)}}
+{{$people := cslice}}
+{{$amounts := cslice}}
+{{range $entries}}
+	{{$people = $people.Append .UserID}}
+	{{$amounts = $amounts.Append .Value}}
+{{end}}
+
+{{$len := len $people}}
+{{$descp := ""}}
+
+{{if eq $len 1}}
+	{{$descp = (printf "1. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)))}}
+{{else if eq $len 2}}
+	{{$descp = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)))}}
+{{else if eq $len 3}}
+	{{$descp = (printf " 1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)))}}
+{{else if eq $len 4}}
+	{{$descp = (printf " 1. <@%v>:%v%% percent gain \n2. <@%v>:%v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)))}}
+{{else if eq $len 5}}
+	{{$descp = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain \n5. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)) (index $people 4) (humanizeThousands (index $amounts 4)))}}
+{{end}}
+
+{{$entries = (dbTopEntries "lbgr" 5 0)}}
+{{$people = cslice}}
+{{$amounts = cslice}}
+{{range $entries}}
+	{{$people = $people.Append .UserID}}
+	{{$amounts = $amounts.Append .Value}}
+{{end}}
+
+{{$len = len $people}}
+{{$descp2 := ""}}
+
+{{if eq $len 1}}
+	{{$descp2 = (printf "1. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)))}}
+{{else if eq $len 2}}
+	{{$descp2 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)))}}
+{{else if eq $len 3}}
+	{{$descp2 = (printf " 1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)))}}
+{{else if eq $len 4}}
+	{{$descp2 = (printf " 1. <@%v>:%v%% percent gain \n2. <@%v>:%v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)))}}
+{{else if eq $len 5}}
+	{{$descp2 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain \n5. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)) (index $people 4) (humanizeThousands (index $amounts 4)))}}
+{{end}}
+
+{{$entries = (dbTopEntries "lbse" 5 0)}}
+{{$people = cslice}}
+{{$amounts = cslice}}
+{{range $entries}}
+	{{$people = $people.Append .UserID}}
+	{{$amounts = $amounts.Append .Value}}
+{{end}}
+
+{{$len = len $people}}
+{{$descp3 := ""}}
+
+{{if eq $len 1}}
+	{{$descp3 = (printf "1. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)))}}
+{{else if eq $len 2}}
+	{{$descp3 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)))}}
+{{else if eq $len 3}}
+	{{$descp3 = (printf " 1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)))}}
+{{else if eq $len 4}}
+	{{$descp3 = (printf " 1. <@%v>:%v%% percent gain \n2. <@%v>:%v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)))}}
+{{else if eq $len 5}}
+	{{$descp3 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain \n5. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)) (index $people 4) (humanizeThousands (index $amounts 4)))}}
+{{end}}
+
+{{$entries = (dbTopEntries "lbrt" 5 0)}}
+{{$people = cslice}}
+{{$amounts = cslice}}
+{{range $entries}}
+	{{$people = $people.Append .UserID}}
+	{{$amounts = $amounts.Append .Value}}
+{{end}}
+
+{{$len = len $people}}
+{{$descp5 := ""}}
+
+{{if eq $len 1}}
+	{{$descp5 = (printf "1. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)))}}
+{{else if eq $len 2}}
+	{{$descp5 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)))}}
+{{else if eq $len 3}}
+	{{$descp5 = (printf " 1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)))}}
+{{else if eq $len 4}}
+	{{$descp5 = (printf " 1. <@%v>:%v%% percent gain \n2. <@%v>:%v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)))}}
+{{else if eq $len 5}}
+	{{$descp5 = (printf "1. <@%v>: %v%% percent gain \n2. <@%v>: %v%% percent gain \n3. <@%v>: %v%% percent gain \n4. <@%v>: %v%% percent gain \n5. <@%v>: %v%% percent gain" (index $people 0) (humanizeThousands (index $amounts 0)) (index $people 1) (humanizeThousands (index $amounts 1)) (index $people 2) (humanizeThousands (index $amounts 2)) (index $people 3) (humanizeThousands (index $amounts 3)) (index $people 4) (humanizeThousands (index $amounts 4)))}}
+{{end}}
+
+{{$descp4 := (printf "**COIN FLIP:**\n%v\n**GAMBLE ROLL:**\n%v\n**SNAKE EYES:**\n%v\n**ROULETTE:**\n%v" $descp $descp2 $descp3 $descp5)}}
+
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Robbing Central Gambling Leaderboard" "description" $descp4 "footer" (sdict "text" "All values may not be accurate. Run !stats to update your leaderboard data.") "thumbnail" (sdict "url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096")))}}
