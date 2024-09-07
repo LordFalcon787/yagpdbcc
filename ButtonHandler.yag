@@ -1,0 +1,16 @@
+{{/*
+    Trigger Type: Message Component
+    Trigger: bjstop:bjhit
+ */}}
+
+{{$cid := .CustomID}}
+
+{{if eq $cid "buttons-bjstop"}}
+{{$usr := .User.ID}}
+{{$set := (dbSet $usr "blackjack" "stop")}}
+{{sendResponse nil (complexMessage "content" "You have successfully selected stop!" "ephemeral" true)}}
+{{else if eq $cid "buttons-bjhit"}}
+{{$usr := .User.ID}}
+{{$set := (dbSet $usr "blackjack" "hit")}}
+{{sendResponse nil (complexMessage "content" "You have successfully selected hit!" "ephemeral" true)}}
+{{end}}
