@@ -1,0 +1,171 @@
+{{/* Requires the !update command to work. 
+     Trigger Type: Command
+     Trigger: groll
+*/}}
+
+{{$msgID := .Message.ID}}
+{{$usr := .User}}
+
+{{$args := parseArgs 1 "Please add how much you want to gamble. e.g. `!groll 50m`"
+    (carg "string" "gamble")}}
+{{$gambleAmt := toInt ($args.Get 0)}}
+{{$str1 := "gamblerollbal"}}
+{{$str2 := (str $usr.ID)}}
+{{$key := joinStr "" $str1 $str2}}
+{{$key2 := joinStr "" $key "time"}}
+{{$time := (dbGet 1205270486230110330 $key2).Value}}
+
+{{if $time}}
+{{else}}
+{{$time = 0}}
+{{end}}
+
+{{if ge (toInt $time) 10}}
+{{sendMessage nil "You have reached the max gambling limit."}}
+{{return}}
+{{end}}
+
+{{$time = (add (toInt $time) 1)}}
+
+{{$find := reFindAll ",*" ($args.Get 0)}}
+{{if (eq (len $find) 0)}}
+{{else}}
+{{$new := $gambleAmt}}
+{{$split := split ($args.Get 0) ","}}
+{{if eq (len $split) 2}}
+{{$new = joinStr "" (index $split 0) (index $split 1)}}
+{{else if eq (len $split) 3}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2)}}
+{{else if eq (len $split) 4}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2) (index $split 3)}}
+{{end}}
+{{$gambleAmt = toInt $new}}
+{{end}}
+
+
+{{$pool := (toInt (dbGet 1205270486230110330 "gamblepool").Value)}}
+{{$usramt := (toInt ((dbGet 1205270486230110330 $key).Value))}}
+
+{{if eq $pool 0}}
+	{{sendMessage nil "Pool amount is 0."}}
+	{{return}}
+{{end}}
+
+{{if $usramt}}
+{{else}}
+{{$usramt = 0}}
+{{end}}
+
+{{if $pool}}
+{{else}}
+{{sendMessage nil "Pool has not been configured. Please configure it by using `!grset`"}}
+{{return}}
+{{end}}
+
+{{$total := $gambleAmt}}
+
+{{range $each := reFindAllSubmatches "(?i)\xe2\x8f\xa3?(([0-9.]+) ?[kmbt]\\b)+?" ($args.Get 0)}}
+    {{/* Repeat for all units. */}}
+    {{if eq (len $each) 3}}
+        {{/* Is valid unit. */}}
+        {{if inFold (index $each 0) "k"}}
+            {{/* Compute thousands. */}}
+            {{$each = mult (index $each 2) 1000}}
+        {{else if inFold (index $each 0) "m"}}
+            {{/* Compute millions. */}}
+            {{$each = mult (index $each 2) 1000000}}
+        {{else if inFold (index $each 0) "b"}}
+            {{/* Compute billions. */}}
+            {{$each = mult (index $each 2) 1000000000}}
+        {{else if inFold (index $each 0) "t"}}
+            {{/* Compute trillions. */}}
+            {{$each = mult (index $each 2) 1000000000000}}
+        {{else}}
+            {{/* Compute single. */}}
+            {{$each = index $each 2}}
+        {{end}}
+        {{/* Add to total. */}}
+		{{$total = (toInt $each)}}
+    {{end}}
+{{end}}
+{{$gambleAmt = toInt $total}}
+{{$usramt = $usramt}}
+
+
+{{$newbal := 0}}
+{{$descp := ""}}
+{{$chance := randInt 8}}
+{{$title := (printf "%v's gamble roll session" (.User.String))}}
+
+{{if gt $gambleAmt $pool}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt $usramt}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt 100000000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet more than 100,000,000.")}}
+{{return}}
+{{end}}
+
+{{if lt $gambleAmt 1000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet less than 1,000.")}}
+{{return}}
+{{end}}
+
+{{$get2 := (dbGet (.User.ID) "grstat").Value}}
+
+{{if $get2}}
+{{else}}
+{{$get2 = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{$getwon := $get2.Get "won"}}
+{{$getbet := $get2.Get "bet"}}
+
+{{if or (eq $chance 0) (eq $chance 6)}}
+	{{$usramt = (sub $usramt $gambleAmt)}}
+	{{$pool = (add $pool $gambleAmt)}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **1** and lost all of your bet. \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{$get2.Set "bet" (add $getbet $gambleAmt)}}
+{{else if or (eq $chance 1) (eq $chance 7)}}
+    {{$usramt = (sub $usramt (mult 0.5 $gambleAmt))}}
+	{{$pool = (add $pool (mult 0.5 $gambleAmt))}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **2** and lost half of your bet.  \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{$get2.Set "bet" (add $getbet (mult 0.5 $gambleAmt))}}
+{{else if eq $chance 4}}
+    {{$usramt = (sub $usramt (mult 0.2 $gambleAmt))}}
+	{{$pool = (add $pool (mult 0.2 $gambleAmt))}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **3** and lost 20%% of your bet.  \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{else if eq $chance 3}}
+	{{$pool = (sub $pool (mult 0.25 $gambleAmt))}}
+	{{$usramt = (add $usramt (mult 0.25 $gambleAmt))}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **4** and gained 25 percent of your bet.  \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{$get2.Set "bet" (add $getbet $gambleAmt)}}
+{{$get2.Set "won" (add $getwon (mult 0.25 $gambleAmt))}}
+{{else if eq $chance 2}}
+	{{$usramt = (add $usramt (mult 0.5 $gambleAmt))}}
+	{{$pool = (sub $pool (mult 0.5 $gambleAmt))}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **5** and gained 50 percent your bet. \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{$get2.Set "bet" (add $getbet $gambleAmt)}}
+{{$get2.Set "won" (add $getwon (mult 0.5 $gambleAmt))}}
+{{else if eq $chance 5}}
+	{{$usramt = (add $usramt $gambleAmt)}}
+	{{$pool = (sub $pool $gambleAmt)}}
+	{{$descp = (printf "You rolled a dice and bet %v on it. \n \n You rolled **6** and doubled your bet.  \n \n The new pool balance is: %v and your new user balance is: %v" (humanizeThousands $gambleAmt) "`ADMIN ONLY`" (humanizeThousands $usramt))}}
+{{$get2.Set "won" (add $getwon $gambleAmt)}}
+{{end}}
+
+{{$set1 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
+{{$set2 := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
+{{$set3 := (dbSetExpire 1205270486230110330 $key2 $time 300)}}
+{{$set4 := (dbSet (.User.ID) "grstat" $get2)}}
+
+{{$div := (mult (fdiv ($get2.Get "won") ($get2.Get "bet")) 100)}}
+{{$set5 := (dbSet (.User.ID) "lbgr" (sub $div 100))}}
+
+{{sendMessage nil (complexMessage "reply" $msgID "embed" (cembed "title" $title "description" $descp "footer" (sdict "text" "Robbing Central - Made by _lordfalcon_" "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=1024&format=webp&width=0&height=512") "thumbnail" (sdict "url" "https://i.imgur.com/CTZGCrv.gif" "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096")))}}

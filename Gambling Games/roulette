@@ -1,0 +1,200 @@
+{{/* Requires the !update command to work. 
+     Trigger Type: Command
+     Trigger: rt
+*/}}
+
+{{$msgID := .Message.ID}}
+{{$usr := .User}}
+
+{{$args := parseArgs 2 "Please add how much you want to bet on roulette and your color choice. e.g. `!rt 50m [green/red/black/random]`"
+    (carg "string" "gamble") (carg "string" "color")}}
+{{$gambleAmt := toInt ($args.Get 0)}}
+{{$color := ($args.Get 1)}}
+{{$str1 := "roulettebal"}}
+{{$str2 := (str $usr.ID)}}
+{{$key := joinStr "" $str1 $str2}}
+{{$key2 := joinStr "" $key "time"}}
+{{$time := (dbGet 1205270486230110330 $key2).Value}}
+
+{{$green := cslice "green" "gree" "g"}}
+{{$red := cslice "red" "re" "r"}}
+{{$black := cslice "black" "b" "blac"}}
+{{$rand := cslice "random" "idk"}}
+{{$usrclr := ""}}
+
+{{if in $green $color}}
+	{{$usrclr = "green"}}
+{{else if in $black $color}}
+	{{$usrclr = "black"}}
+{{else if in $red $color}}
+	{{$usrclr = "red"}}
+{{else if in $rand $color}}
+	{{$slice := cslice "red" "red" "red" "red" "black" "black" "black" "black" "green"}}
+	{{$int := randInt 9}}
+	{{$usrclr = index $slice $int}}
+{{else}}
+	{{sendMessage nil "Correct syntax is `!rt [bet amount] [green/black/red/random]`"}}
+	{{return}}
+{{end}}
+
+{{if $time}}
+{{else}}
+{{$time = 0}}
+{{end}}
+
+{{if ge (toInt $time) 10}}
+{{sendMessage nil "You have reached the max gambling limit."}}
+{{return}}
+{{end}}
+
+{{$time = (add (toInt $time) 1)}}
+
+{{$find := reFindAll ",*" ($args.Get 0)}}
+{{if (eq (len $find) 0)}}
+{{else}}
+{{$new := $gambleAmt}}
+{{$split := split ($args.Get 0) ","}}
+{{if eq (len $split) 2}}
+{{$new = joinStr "" (index $split 0) (index $split 1)}}
+{{else if eq (len $split) 3}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2)}}
+{{else if eq (len $split) 4}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2) (index $split 3)}}
+{{end}}
+{{$gambleAmt = toInt $new}}
+{{end}}
+
+
+{{$pool := (toInt (dbGet 1205270486230110330 "gamblepool").Value)}}
+{{$usramt := (toInt ((dbGet 1205270486230110330 $key).Value))}}
+
+{{if eq $pool 0}}
+	{{sendMessage nil "Pool amount is 0."}}
+	{{return}}
+{{end}}
+
+{{if $usramt}}
+{{else}}
+{{$usramt = 0}}
+{{end}}
+
+{{if $pool}}
+{{else}}
+{{sendMessage nil "Pool has not been configured. Please configure it by using `!rset`"}}
+{{return}}
+{{end}}
+
+{{$total := $gambleAmt}}
+
+{{range $each := reFindAllSubmatches "(?i)\xe2\x8f\xa3?(([0-9.]+) ?[kmbt]\\b)+?" ($args.Get 0)}}
+    {{/* Repeat for all units. */}}
+    {{if eq (len $each) 3}}
+        {{/* Is valid unit. */}}
+        {{if inFold (index $each 0) "k"}}
+            {{/* Compute thousands. */}}
+            {{$each = mult (index $each 2) 1000}}
+        {{else if inFold (index $each 0) "m"}}
+            {{/* Compute millions. */}}
+            {{$each = mult (index $each 2) 1000000}}
+        {{else if inFold (index $each 0) "b"}}
+            {{/* Compute billions. */}}
+            {{$each = mult (index $each 2) 1000000000}}
+        {{else if inFold (index $each 0) "t"}}
+            {{/* Compute trillions. */}}
+            {{$each = mult (index $each 2) 1000000000000}}
+        {{else}}
+            {{/* Compute single. */}}
+            {{$each = index $each 2}}
+        {{end}}
+        {{/* Add to total. */}}
+		{{$total = (toInt $each)}}
+    {{end}}
+{{end}}
+{{$gambleAmt = toInt $total}}
+{{$usramt = $usramt}}
+
+
+{{$newbal := 0}}
+{{$title := (printf "%v's roulette session" (.User.String))}}
+
+{{if gt $gambleAmt $pool}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt $usramt}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt 20000000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet more than 20,000,000.")}}
+{{return}}
+{{end}}
+
+{{if lt $gambleAmt 1000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet less than 1,000.")}}
+{{return}}
+{{end}}
+
+{{$get := (dbGet (.User.ID) "rstat").Value}}
+
+{{if $get}}
+{{else}}
+{{$get = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{$getwon := $get.Get "won"}}
+{{$getbet := $get.Get "bet"}}
+
+{{$rcolor := randInt 4}}
+{{$greenc := randInt 20}}
+{{$chosen := ""}}
+{{$emoji := ""}}
+
+{{if eq $greenc 0}}
+	{{$chosen = "green"}}
+	{{$emoji = ":green_square:"}}
+{{else if or (eq $rcolor 0) (eq $rcolor 1)}}
+	{{$chosen = "red"}}
+	{{$emoji = ":red_square:"}}
+{{else if or (eq $rcolor 2) (eq $rcolor 3)}}
+	{{$chosen = "black"}}
+	{{$emoji = ":black_large_square:"}}
+{{end}}
+
+
+{{$descp := (printf "You spun the the wheel and landed on **%v** \n# %v" $chosen $emoji)}}
+
+{{if and (eq $chosen "black") (eq $usrclr "black")}}
+	{{$pool = (sub $pool $gambleAmt)}}
+	{{$usramt = (add $usramt $gambleAmt)}}
+	{{$get.Set "won" (add $getwon $gambleAmt)}}
+	{{$descp = (printf "You spun the the wheel and landed on **%v** \n# %v \n\n Your guess was right and you won your bet! Your new balance is %v and the new pool balance is %v" $chosen $emoji (humanizeThousands $usramt) "`ADMIN ONLY`")}}
+{{else if and (eq $chosen "red") (eq $usrclr "red")}}
+	{{$pool = (sub $pool $gambleAmt)}}
+	{{$usramt = (add $usramt $gambleAmt)}}
+	{{$get.Set "won" (add $getwon $gambleAmt)}}
+	{{$descp = (printf "You spun the the wheel and landed on **%v** \n# %v \n\n Your guess was right and you won your bet! Your new balance is %v and the new pool balance is %v" $chosen $emoji (humanizeThousands $usramt) "`ADMIN ONLY`")}}
+{{else if and (eq $chosen "green") (eq $usrclr "green")}}
+	{{$pool = (sub $pool (mult 15 $gambleAmt))}}
+	{{$usramt = (add $usramt (mult 15 $gambleAmt))}}
+	{{$get.Set "won" (add $getwon (mult 15 $gambleAmt))}}
+	{{$descp = (printf "You spun the the wheel and landed on **%v** \n# %v \n\n You guessed green and the bot chose green! You increased your balance by 15x your bet! Your new balance is %v and the new pool balance is %v" $chosen $emoji (humanizeThousands $usramt) "`ADMIN ONLY`")}}
+{{else}}
+	{{$pool = (add $pool $gambleAmt)}}
+	{{$usramt = (sub $usramt $gambleAmt)}}
+	{{$descp = (printf "You spun the the wheel and landed on **%v** \n# %v \n\n You chose the wrong color, which was %v and lost all your bet. Your new balance is %v and the new pool balance is %v" $chosen $emoji $usrclr (humanizeThousands $usramt) "`ADMIN ONLY`")}}
+{{end}}
+
+
+{{$set1 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
+{{$set2 := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
+{{$set3 := (dbSetExpire 1205270486230110330 $key2 $time 300)}}
+{{$get.Set "bet" (add $getbet $gambleAmt)}}
+
+{{$set4 := (dbSet (.User.ID) "rstat" $get)}}
+{{$div := (mult (fdiv ($get.Get "won") ($get.Get "bet")) 100)}}
+{{$set5 := (dbSet (.User.ID) "lbrt" (sub $div 100))}}
+
+{{sendMessage nil (complexMessage "reply" $msgID "embed" (cembed "title" $title "description" $descp "footer" (sdict "text" "Robbing Central - Made by _lordfalcon_" "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=1024&format=webp&width=0&height=512") "thumbnail" (sdict "url" "https://img1.picmix.com/output/stamp/normal/4/5/9/5/1515954_ea5fd.gif" "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096")))}}

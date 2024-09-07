@@ -1,0 +1,80 @@
+{{/* List of stats for gamble roll, coinflip, roulette, and snake eyes games. 
+     Trigger Type: Command
+     Trigger: stats
+*/}}
+
+{{$args := parseArgs 0 "" (carg "user" "victim")}}
+
+{{$usr := .User}}
+
+{{if $args.IsSet 0}}
+	{{$usr = $args.Get 0}}
+{{end}}
+
+{{$cf := (dbGet ($usr.ID) "cfstat").Value}}
+{{$se := (dbGet ($usr.ID) "sestat").Value}}
+{{$gr := (dbGet ($usr.ID) "grstat").Value}}
+{{$rt := (dbGet ($usr.ID) "rstat").Value}}
+
+{{if $cf}}
+{{else}}
+{{$cf = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{if $se}}
+{{else}}
+{{$se = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{if $gr}}
+{{else}}
+{{$gr = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{if $rt}}
+{{else}}
+{{$rt = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{$sewon := $se.Get "won"}}
+{{$sebet := $se.Get "bet"}}
+{{$cfwon := $cf.Get "won"}}
+{{$cfbet := $cf.Get "bet"}}
+{{$grwon := $gr.Get "won"}}
+{{$grbet := $gr.Get "bet"}}
+{{$rtwon := $rt.Get "won"}}
+{{$rtbet := $rt.Get "bet"}}
+
+{{$percent1 := (round (mult (fdiv $cfwon $cfbet) 100))}}
+{{$percent2 := (round (mult (fdiv $sewon $sebet) 100))}}
+{{$percent3 := (round (mult (fdiv $grwon $grbet) 100))}}
+{{$percent4 := (round (mult (fdiv $rtwon $rtbet) 100))}}
+
+
+{{$title := (printf "%v's gambling stats" ($usr.String))}}
+{{$descp := (printf "**COIN FLIP:** \n Won: ⏣ %v \n Bet: ⏣ %v \n Percent Win: %v%% \n **SNAKE EYES:** \n Won: ⏣ %v \n Bet: ⏣ %v \n Percent Win: %v%% \n **GAMBLE ROLL:** \n Won: ⏣ %v \n Bet: ⏣ %v \n Percent Win: %v%% \n **ROULETTE:** \n Won: ⏣ %v \n Bet: ⏣ %v \n Percent Win: %v%%" (humanizeThousands $cfwon) (humanizeThousands $cfbet) (sub $percent1 100) (humanizeThousands $sewon) (humanizeThousands $sebet) (sub $percent2 100) (humanizeThousands $grwon) (humanizeThousands $grbet) (sub $percent3 100) (humanizeThousands $rtwon) (humanizeThousands $rtbet) (sub $percent4 100))}}
+
+{{$div := (sub (mult (fdiv $sewon $sebet) 100) 100)}}
+{{if eq $sebet 0}}
+	{{$div = 0}}
+{{end}}
+{{$set5 := (dbSet ($usr.ID) "lbse" $div)}}
+{{$div = (sub (mult (fdiv $grwon $grbet) 100) 100)}}
+{{if eq $grbet 0}}
+	{{$div = 0}}
+{{end}}
+{{$set6 := (dbSet ($usr.ID) "lbgr" $div)}}
+{{$div = (sub (mult (fdiv $cfwon $cfbet) 100) 100)}}
+{{if eq $cfbet 0}}
+	{{$div = 0}}
+{{end}}
+{{$set7 := (dbSet ($usr.ID) "lbcf" $div)}}
+{{$div = (sub (mult (fdiv $rtwon $rtbet) 100) 100)}}
+{{if eq $rtbet 0}}
+	{{$div = 0}}
+{{end}}
+{{$set8 := (dbSet ($usr.ID) "lbrt" $div)}}
+
+             
+
+{{sendMessage nil (complexMessage "embed" (cembed "title" $title "description" $descp))}}

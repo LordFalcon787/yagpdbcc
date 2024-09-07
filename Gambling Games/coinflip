@@ -1,0 +1,184 @@
+{{/* Requires the !update command to work. 
+     Trigger Type: Command
+     Trigger: cf
+*/}}
+
+{{$msgID := .Message.ID}}
+{{$usr := .User}}
+
+{{$args := parseArgs 2 "Please add how much you want to coinflip and your choice. e.g. `!cf [bet] [tails/heads/random]`"
+    (carg "string" "gamble") (carg "string" "choice")}}
+{{$gambleAmt := toInt ($args.Get 0)}}
+{{$str1 := "coinflipbal"}}
+{{$str2 := (str $usr.ID)}}
+{{$key := joinStr "" $str1 $str2}}
+{{$key2 := joinStr "" $key "time"}}
+{{$time := (dbGet 1205270486230110330 $key2).Value}}
+
+{{$tails := cslice "tails" "tail" "t"}}
+{{$heads := cslice "heads" "head" "h"}}
+{{$rand := cslice "rand" "random" "idk"}}
+{{$choice := ""}}
+
+{{if in $tails (lower ($args.Get 1))}}
+	{{$choice = "tails"}}
+{{else if in $heads (lower ($args.Get 1))}}
+	{{$choice = "heads"}}
+{{else if in $rand (lower ($args.Get 1))}}
+	{{$choose := randInt 2}}
+	{{$list := cslice "heads" "tails"}}
+	{{$choice = index $list $choose}}
+{{end}}
+
+{{if eq $choice ""}}
+	{{sendMessage nil "Correct syntax is `!cf [bet] [tails/heads]`"}}
+	{{return}}
+{{end}}
+
+{{if $time}}
+{{else}}
+{{$time = 0}}
+{{end}}
+
+{{if ge (toInt $time) 5}}
+{{sendMessage nil "You have reached the max gambling limit."}}
+{{return}}
+{{end}}
+
+{{$time = (add (toInt $time) 1)}}
+
+{{$find := reFindAll ",*" ($args.Get 0)}}
+{{if (eq (len $find) 0)}}
+{{else}}
+{{$new := $gambleAmt}}
+{{$split := split ($args.Get 0) ","}}
+{{if eq (len $split) 2}}
+{{$new = joinStr "" (index $split 0) (index $split 1)}}
+{{else if eq (len $split) 3}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2)}}
+{{else if eq (len $split) 4}}
+{{$new = joinStr "" (index $split 0) (index $split 1) (index $split 2) (index $split 3)}}
+{{end}}
+{{$gambleAmt = toInt $new}}
+{{end}}
+
+
+{{$pool := (toInt (dbGet 1205270486230110330 "gamblepool").Value)}}
+{{$usramt := (toInt ((dbGet 1205270486230110330 $key).Value))}}
+
+{{if eq $pool 0}}
+	{{sendMessage nil "Pool amount is 0."}}
+	{{return}}
+{{end}}
+
+{{if $usramt}}
+{{else}}
+{{$usramt = 0}}
+{{end}}
+
+{{if $pool}}
+{{else}}
+{{sendMessage nil "Pool has not been configured. Please configure it by using `!cset`"}}
+{{return}}
+{{end}}
+
+{{$total := $gambleAmt}}
+
+{{range $each := reFindAllSubmatches "(?i)\xe2\x8f\xa3?(([0-9.]+) ?[kmbt]\\b)+?" ($args.Get 0)}}
+    {{/* Repeat for all units. */}}
+    {{if eq (len $each) 3}}
+        {{/* Is valid unit. */}}
+        {{if inFold (index $each 0) "k"}}
+            {{/* Compute thousands. */}}
+            {{$each = mult (index $each 2) 1000}}
+        {{else if inFold (index $each 0) "m"}}
+            {{/* Compute millions. */}}
+            {{$each = mult (index $each 2) 1000000}}
+        {{else if inFold (index $each 0) "b"}}
+            {{/* Compute billions. */}}
+            {{$each = mult (index $each 2) 1000000000}}
+        {{else if inFold (index $each 0) "t"}}
+            {{/* Compute trillions. */}}
+            {{$each = mult (index $each 2) 1000000000000}}
+        {{else}}
+            {{/* Compute single. */}}
+            {{$each = index $each 2}}
+        {{end}}
+        {{/* Add to total. */}}
+		{{$total = (toInt $each)}}
+    {{end}}
+{{end}}
+{{$gambleAmt = toInt $total}}
+{{$usramt = $usramt}}
+
+
+
+{{if gt $gambleAmt $pool}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt $usramt}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet this much.")}}
+{{return}}
+{{end}}
+
+{{if gt $gambleAmt 50000000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet more than 50,000,000.")}}
+{{return}}
+{{end}}
+
+{{if lt $gambleAmt 1000}}
+{{sendMessage nil (complexMessage "reply" $msgID "content" "You cannot bet less than 1,000.")}}
+{{return}}
+{{end}}
+
+{{$descp := ""}}
+{{$title := (printf "%v's coinflip session" (.User.String))}}
+{{$winCount := 1}}
+{{$chance := randInt 4}}
+{{$botchoice := ""}}
+{{$notbotchoice := ""}}
+{{$url := ""}}
+{{if or (eq $chance 0) (eq $chance 2)}}
+	{{$botchoice = "tails"}}
+	{{$notbotchoice = "heads"}}
+	{{$url = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/dc61c80b-e2ae-4da0-801e-4c84d7cf91b7/dc7egby-23b23f3b-db59-4e3e-b57f-8b1ada105126.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2RjNjFjODBiLWUyYWUtNGRhMC04MDFlLTRjODRkN2NmOTFiN1wvZGM3ZWdieS0yM2IyM2YzYi1kYjU5LTRlM2UtYjU3Zi04YjFhZGExMDUxMjYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.QemscS80d_Q7Ir-sDQ26ZAiiTHIJHbRAzTgpW1tDvsw"}}
+{{else if or (eq $chance 1) (eq $chance 3)}}
+	{{$botchoice = "heads"}}
+	{{$notbotchoice = "tails"}}
+	{{$url = "https://upload.wikimedia.org/wikipedia/commons/a/a0/2006_Quarter_Proof.png"}}
+{{end}}
+
+{{$get2 := (dbGet (.User.ID) "cfstat").Value}}
+
+{{if $get2}}
+{{else}}
+{{$get2 = (sdict "won" 0 "bet" 0)}}
+{{end}}
+
+{{$getwon := $get2.Get "won"}}
+{{$getbet := $get2.Get "bet"}}
+
+{{if eq $botchoice $choice}}
+{{$usramt = (add $usramt $gambleAmt)}}
+{{$pool = (sub $pool $gambleAmt)}}
+{{$descp = (printf "You risked %v on a coinflip and the bot chose **%v** and you chose **%v**! \n \n You won your bet! Your new user balance is **%v** and the new pool balance is %v" (humanizeThousands $gambleAmt) $botchoice $choice (humanizeThousands $usramt) "`ADMIN ONLY`")}}
+{{$pool = (sub $pool $gambleAmt)}}
+{{$get2.Set "won" (add $getwon $gambleAmt)}}
+{{else if eq $notbotchoice $choice}}
+{{$descp = (printf "You risked %v on a coinflip and the bot chose **%v** and you chose **%v**. \n \n You lost all of your bet. Your new user balance is **%v** and the new pool balance is %v" (humanizeThousands $gambleAmt) $botchoice $choice (humanizeThousands (sub $usramt $gambleAmt)) "`ADMIN ONLY`")}}         
+{{$usramt =  (sub $usramt $gambleAmt)}}
+{{$pool = (add $pool $gambleAmt)}}
+{{end}}
+
+{{$set1 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
+{{$set2 := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
+{{$set3 := (dbSetExpire 1205270486230110330 $key2 $time 300)}}
+
+{{$get2.Set "bet" (add $getbet $gambleAmt)}}
+{{$set4 := (dbSet (.User.ID) "cfstat" $get2)}}
+{{$div := (mult (fdiv ($get2.Get "won") ($get2.Get "bet")) 100)}}
+{{$set5 := (dbSet (.User.ID) "lbcf" (sub $div 100))}}
+
+{{sendMessage nil (complexMessage "reply" $msgID "embed" (cembed "title" $title "description" $descp "footer" (sdict "text" "Robbing Central - Made by _lordfalcon_" "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=1024&format=webp&width=0&height=512") "thumbnail" (sdict "url" $url)))}}
