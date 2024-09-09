@@ -1,0 +1,136 @@
+{{/* Trigger Type: Command
+     Trigger: w */}}
+
+{{$args := parseArgs 0 "" (carg "userid" "target")}}
+{{$usr := .User}}
+
+{{if $args.IsSet 0}}{{$usr = (getMember ($args.Get 0)).User}}{{end}}
+
+{{$embed := sdict}}
+{{$fields := cslice}}
+{{$colors := cslice 16711680 65280 9371903 16753920 16761035 0 255}}
+{{if eq $usr.ID 1166134423146729563}}{{$colors = cslice 9371903 255}}{{end}}
+{{$color := (index $colors (randInt (len $colors)))}}
+{{$member := (getMember $usr.ID)}}
+{{$roleslice := cslice}}
+
+{{range $1 := $member.Roles}}
+	{{$roleslice = $roleslice.Append $1}}
+{{end}}
+
+{{ $avatar := print "https://cdn.discordapp.com/avatars/" $usr.ID "/" $usr.Avatar ".png" }}
+{{$embed.Set "author" (sdict "name" $usr.String "icon_url" $avatar)}}
+{{$embed.Set "thumbnail" (sdict "url" $avatar)}}
+{{$embed.Set "description" $usr.Mention}}
+{{$joined := (formatTime ($member.JoinedAt.Parse))}}
+{{$created := (formatTime (currentUserCreated))}}
+{{$roles := ""}}
+{{$perms := ""}}
+{{$designations := ""}}
+
+{{if eq $usr.ID (.User.ID)}}
+	{{$fields = $fields.Append (sdict "name" "Joined At" "value" (toString $joined) "inline" true)}}
+    {{$fields = $fields.Append (sdict "name" "Created At" "value" (toString $created) "inline" true)}}
+{{else}}
+	{{$fields = $fields.Append (sdict "name" "Joined At" "value" (toString $joined) "inline" true)}}
+{{end}}
+      
+{{$roledict := dict}}
+{{$dict2 := cslice}}
+{{$g := .Guild}}
+{{range $2 := $roleslice}}
+	{{$position := (jsonToSdict (json ($g.GetRole $2))).Get "position"}}
+	{{$roledict.Set $position $2}}
+	{{$dict2 = $dict2.Append (sdict "position" $position)}}
+{{end}}
+{{$sort := sort $dict2 (sdict "key" "position" "reverse" true)}}
+
+{{range $3 := $sort}}
+	{{$pos := $3.Get "position"}}
+	{{$rolei := $roledict.Get $pos}}
+	{{$roles = joinStr " " $roles (printf "<@&%v>" $rolei)}}
+{{end}}
+
+{{$fields = $fields.Append (sdict "name" (printf "Roles [%v]" (len $roleslice)) "value" $roles "inline" false)}}
+
+{{$perm := .Permissions}}
+{{$permlist := cslice (cslice "Administrator" $perm.Administrator) (cslice "Manage Messages" $perm.ManageMessages) (cslice "Manage Roles" $perm.ManageRoles) (cslice "Manage Threads" $perm.ManageThreads) (cslice "Manage Server" $perm.ManageServer) (cslice "Manage Channels" $perm.ManageChannels) (cslice "Manage Webhooks" $perm.ManageWebhooks) (cslice "Mention Roles and Everyone" $perm.MentionEveryone) (cslice "Manage Expressions" $perm.ManageEmojis) (cslice "Manage Nicknames" $perm.ManageNicknames) (cslice "Ban Members" $perm.BanMembers) (cslice "Kick Members" $perm.KickMembers) (cslice "Timeout Members" $perm.ModerateMembers)}}
+
+{{range $permission := $permlist}}
+	{{if in $permission 8}}
+	{{if targetHasRoleID $usr.ID 1213612442756583494}} {{/* Role ID can be changed to one the Owner has. */}}
+	{{$perms = joinStr ", " $perms "Server Owner"}}
+	{{end}}
+	{{end}}
+	{{$name := (index $permission 0)}}
+	{{$permas := (index $permission 1)}}
+	{{if targetHasPermissions $usr.ID $permas}}
+	{{$perms = joinStr ", " $perms $name}}
+	{{end}}
+{{end}}
+
+{{if eq $perms ""}}{{$perms = "None."}}{{end}}
+{{$fields = $fields.Append (sdict "name" "Key Permissions" "value" $perms "inline" false)}}
+
+{{$owner := 1213612442756583494}}
+{{$taco := $owner}}
+{{$gaslighter := $owner}}
+{{$serverdev := 1205357853196558336}}
+{{$admin := 1205270486502867030}}
+{{$payoutstaff := 1206299567520354317}}
+{{$headmod := 1205270486490292251}}
+{{$mod := 1205270486490292246}}
+{{$tmod := 1205270486469058636}}
+{{$kman := 1209039929372315670}}
+{{$fstaff := 1205270486439952442}}
+{{$staff := 1205270486469058634}}
+
+{{/* Above values can be adjusted to your server's role IDs */}}
+
+{{$desglist := cslice (cslice "Server Owner" $owner) (cslice "Taco" $taco) (cslice "Gaslighter" $gaslighter) (cslice "Server Developer" $serverdev) (cslice "Administrator" $admin) (cslice "Payout Manager" $payoutstaff) (cslice "Head Moderator" $headmod) (cslice "Moderator" $mod) (cslice "Trial Moderator" $tmod) (cslice "Karuta Manager" $kman) (cslice "Former Staff" $fstaff) (cslice "Staff Member" $staff)}}
+
+{{range $desg := $desglist}}
+	{{$designation := index $desg 0}}
+	{{$roleid := index $desg 1}}
+	{{if targetHasRoleID $usr.ID $roleid}}
+	{{$designations = joinStr ", " $designations $designation}}
+	{{end}}
+{{end}}
+
+{{if eq $designations ""}}{{$designations = "None."}}{{end}}
+{{$fields = $fields.Append (sdict "name" "Designations" "value" $designations "inline" false)}}
+
+{{$warns := getWarnings $usr.ID}}
+{{$warnNumber := ""}}
+{{$warnSlice := cslice}}
+{{range $each := $warns}}
+{{$each = (reFindAll "[0-9]" (json $each) 9)}}
+{{$warnNumber = ""}}
+	{{range $each2 := $each}}
+	{{$warnNumber = joinStr "" $warnNumber (str $each2)}}
+	{{end}}
+{{$warnSlice = $warnSlice.Append $warnNumber}}
+{{end}}
+
+{{$warnsList := ""}}
+{{$warnsDel := ""}}
+{{$delNumber := 0}}
+{{$warnsAuth := ""}}
+{{$warnsText := ""}}
+{{$delete := false}}
+{{if eq (len $warnSlice) 0}}{{$warnsList = "None."}}{{end}}
+{{range $warnSlice}}
+{{$warnDel := index $warnSlice $delNumber}}
+{{$warnDict := (jsonToSdict (json (index $warns $delNumber)))}}
+{{$warnText := $warnDict.Get "Message"}}
+{{$warnAuthor := $warnDict.Get "AuthorID"}}
+{{$warnsList = (printf "%v\n`#%v` - %v" $warnsList $warnDel $warnText)}}
+{{$delNumber = (add $delNumber 1)}}
+{{end}}
+
+{{$fields = $fields.Append (sdict "name" "Warnings" "value" $warnsList "inline" false)}}
+
+{{$embed.Set "fields" $fields}}
+{{$embed.Set "color" $color}}
+{{$embed.Set "footer" (sdict "text" (printf "ID: %v 	Today at %v" $usr.ID (formatTime currentTime "3:04 PM")))}}
+{{sendMessage nil (complexMessage "embed" (cembed $embed))}}
