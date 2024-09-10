@@ -1,0 +1,86 @@
+{{$days := cslice  "Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Saturday"}}
+{{$dayNum := (dbGet 0 "creditDay").Value}}
+{{if eq (toInt $dayNum) 6}}{{$dayNum = (sub 0 1)}}{{end}}
+{{$currentDay := index $days (toInt (add $dayNum 1))}}
+{{$creditMinimum := 40}}
+{{$staff := (dbGet 0 "staff_list").Value}}
+{{$staffList := cslice}}
+{{$creditExempt := 8}}
+{{$warnTime := 0}}
+
+{{range $role, $id := $staff}}
+	{{range $1 := $id}}
+	{{if not (in $staffList $1)}}
+	{{$staffList = $staffList.Append $1}}
+	{{end}}	
+	{{end}}
+{{end}}
+
+{{if eq $currentDay "Wednesday"}}
+{{range $current := $staffList}}
+	{{$go := true}}
+	{{if targetHasPermissions $current 8}}{{$go = false}}{{end}}
+	{{if targetHasRoleID $current 1205270486469058633}}{{$go = false}}{{end}}
+	{{if $go}}
+	{{$credit := (dbGet 0 "credit_score").Value}}
+	{{$pts := "Points"}}
+	{{$points := (($credit.Get (str $current)).Get $pts)}}
+	{{if not $points}}{{$points = "0"}}{{end}}
+	{{$points = (toInt $points)}}
+	{{if and (lt $points 20) (gt $points 0)}}
+	{{if lt $warnTime 5}}
+	{{$warn := execAdmin (printf "warn %v REQUEST_DM_USER You currently have %v credit points. If you do not have 40 or more credit points by Sunday (12PM EST) you will receive a strike." $current $points)}}
+	{{$warnTime = (add $warnTime 1)}}
+	{{end}}
+	{{else if eq $points 0}}
+	{{execCC 255 nil 0 (cslice $current "Did not have more than 0 credit points by half of the week")}}
+	{{end}}
+	{{end}}
+{{end}}
+{{end}}
+
+{{if eq $currentDay "Tuesday"}}
+{{range $current := $staffList}}
+	{{$go := true}}
+	{{if targetHasPermissions $current 8}}{{$go = false}}{{end}}
+	{{if targetHasRoleID $current 1205270486469058633}}{{$go = false}}{{end}}
+	{{if $go}}
+	{{$credit := (dbGet 0 "credit_score").Value}}
+	{{$pts := "Points"}}
+	{{$points := (($credit.Get (str $current)).Get $pts)}}
+	{{if not $points}}{{$points = "0"}}{{end}}
+	{{$points = (toInt $points)}}
+	{{if and (lt $points 15) (ge $points 0)}}
+	{{if lt $warnTime 5}}
+	{{$warn := execAdmin (printf "warn %v REQUEST_DM_USER You currently have %v credit points. If you do not have 20 or more credit points by tomorrow (12PM EST) you will receive one last warning." $current $points)}}
+	{{$warnTime = (add $warnTime 1)}}
+	{{end}}
+	{{end}}
+	{{end}}
+{{end}}
+{{end}}
+
+{{if eq $currentDay "Saturday"}}
+{{range $current := $staffList}}
+	{{$go := true}}
+	{{if targetHasPermissions $current 8}}{{$go = false}}{{end}}
+	{{if targetHasRoleID $current 1205270486469058633}}{{$go = false}}{{end}}
+	{{if $go}}
+	{{$credit := (dbGet 0 "credit_score").Value}}
+	{{$pts := "Points"}}
+	{{$points := (($credit.Get (str $current)).Get $pts)}}
+	{{if not $points}}{{$points = "0"}}{{end}}
+	{{$points = (toInt $points)}}
+	{{if and (lt $points 25) (gt $points 0)}}
+	{{execCC 255 nil 0 (cslice $current "Did not have more than 0 credit points by half of the week")}}
+	{{else if and (ge $points 25) (le $points 32)}}
+	{{if lt $warnTime 5}}
+	{{$warn := execAdmin (printf "warn %v REQUEST_DM_USER You currently have %v credit points. If you do not have 40 or more credit points by Sunday (12PM EST) you will receive a strike." $current $points)}}
+	{{$warnTime = (add $warnTime 1)}}
+	{{end}}
+	{{end}}
+	{{end}}
+{{end}}
+{{end}}
+
+{{$numSet := (dbSet 0 "creditDay" (toInt (add $dayNum 1)))}}
