@@ -11,11 +11,11 @@
 
 {{range $role, $id := $staff}}
 	{{range $1 := $id}}
-	{{if targetHasRoleID $1 1205270486469058637}}
-	{{if not (in $staffList $1)}}
-	{{$staffList = $staffList.Append $1}}
-	{{end}}
-	{{end}}
+		{{if targetHasRoleID $1 1205270486469058637}}
+			{{if not (in $staffList $1)}}
+			{{$staffList = $staffList.Append $1}}
+			{{end}}
+		{{end}}
 	{{end}}
 {{end}}
 
@@ -24,22 +24,22 @@
 	{{$go := true}}
 	{{if targetHasPermissions $current 8}}{{$go = false}}{{end}}
 	{{if targetHasRoleID $current 1205270486469058633}}{{$go = false}}{{end}}
-	{{if $go}}
-	{{$credit := (dbGet 0 "credit_score").Value}}
-	{{$pts := "Points"}}
-	{{$points := (($credit.Get (str $current)).Get $pts)}}
-	{{if not $points}}{{$points = "0"}}{{end}}
-	{{$points = (toInt $points)}}
-	{{if and (lt $points 20) (gt $points 5)}}
-	{{if lt $warnTime 5}}
-	{{$warn := execAdmin (printf "warn %v REQUEST_DM_USER You currently have %v credit points. If you do not have 40 or more credit points by Sunday (3PM EST) you will receive a strike." $current $points)}}
-	{{$warnTime = (add $warnTime 1)}}
-	{{else}}
-	{{$dmList = $dmList.Append $current}}
-	{{end}}
-	{{else if le $points 5}}
-	{{execCC 255 nil 0 (cslice $current "Did not have more than 5 credit points by half of the week")}}
-	{{end}}
+		{{if $go}}
+			{{$credit := (dbGet 0 "credit_score").Value}}
+			{{$pts := "Points"}}
+			{{$points := (($credit.Get (str $current)).Get $pts)}}
+			{{if not $points}}{{$points = "0"}}{{end}}
+			{{$points = (toInt $points)}}
+				{{if and (lt $points 20) (gt $points 5)}}
+					{{if lt $warnTime 5}}
+					{{$warn := execAdmin (printf "warn %v REQUEST_DM_USER You currently have %v credit points. If you do not have 40 or more credit points by Sunday (3PM EST) you will receive a strike." $current $points)}}
+					{{$warnTime = (add $warnTime 1)}}
+					{{else}}
+					{{$dmList = $dmList.Append $current}}
+					{{end}}
+				{{else if le $points 5}}
+				{{execCC 255 nil 0 (cslice $current "Did not have more than 5 credit points by half of the week")}}
+				{{end}}
 	{{end}}
 {{end}}
 {{end}}
