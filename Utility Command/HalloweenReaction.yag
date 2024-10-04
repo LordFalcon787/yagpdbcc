@@ -1,0 +1,76 @@
+{{$reactID := .Reaction.Emoji.ID}}
+{{if ne $reactID 1218286675508199434}}
+{{return}}
+{{end}}
+
+{{range $1 := (.Message.Reactions)}}
+	{{if (eq $1.Emoji.ID 1291173532432203816)}}
+	{{return}}
+	{{end}}
+{{end}}
+
+{{if not .Message.Embeds}}{{return}}{{end}}
+
+{{$descp := (index .Message.Embeds 0).Description}}
+{{$get := (dbGet 0 "halloweendonos").Value}}
+{{if not $get}}{{$get = sdict}}{{end}}
+
+{{if in $descp "⏣"}}
+	{{$amt := (index (split $descp "⏣") 1)}}
+	{{$amt := (index (split $amt "**") 0)}}
+	{{$coins := $get.Get "coins"}}
+	{{if not $coins}}{{$coins = cslice}}{{end}}
+	{{$coins = $coins.Append $amt}}
+	{{$get.Set "coins" $coins}}
+	{{$set := (dbSet 0 "halloweendonos" $get)}}
+	{{sendMessage 1291176840966307973 (complexMessage "embed" (cembed "title" "Halloween Donation" "description" (printf "**User:** <@%v> \n **Amount:** %v" (.Message.Interaction.User.ID) $amt) "footer" (sdict "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096" "text" (.User.String)) "thumbnail" (sdict "url" "https://i.giphy.com/WmXadcdktUO0WvbmpX.webp")))}}
+{{else if in $descp "Are you sure"}}
+	{{$amt := reFind `You will donate .+` $descp}}
+	{{$amt = reReplace `You will donate ` $amt ""}}
+    {{$amtt = split $amt " "}}
+	{{$amt = reReplace (str (index $amtt 1)) $amt ""}}
+	{{$items := $get.Get "items"}}
+	{{if not $items}}{{$items = cslice}}{{end}}
+	{{$items = $items.Append $amt}}
+	{{$get.Set "items" $items}}
+	{{$set := (dbSet 0 "halloweendonos" $get)}}
+	{{sendMessage 1291176840966307973 (complexMessage "embed" (cembed "title" "Halloween Donation" "description" (printf "**User:** <@%v> \n **Amount:** %v" (.Message.Interaction.User.ID) $amt) "footer" (sdict "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096" "text" (.User.String)) "thumbnail" (sdict "url" "https://i.giphy.com/WmXadcdktUO0WvbmpX.webp")))}}
+{{else if in $descp "Donation Added"}}
+	{{$descp = reReplace "\n" $descp " "}}
+	{{$amt := reFind `Donation Added - .+?:elem_dot:` $descp}}
+	{{$amt = reReplace `Donation Added - ` $amt ""}}
+	{{$amt = reReplace `:elem_dot:` $amt ""}}
+	{{$amt = reReplace `\*` $amt ""}}
+	{{$amt = reReplace `,` $amt ""}}
+	{{$amt = reReplace ` <` $amt ""}}
+	{{$amt = humanizeThousands (toInt $amt)}}
+	{{$amt = str $amt}}
+	{{$coins := $get.Get "Unknown"}}
+	{{if not $coins}}{{$coins = cslice}}{{end}}
+	{{$coins = $coins.Append $amt}}
+	{{$get.Set "Unknown" $coins}}
+	{{$set := (dbSet 0 "halloweendonos" $get)}}
+	{{$user := ""}}
+	{{if .Message.Mentions}}
+		{{$user = toString (index .Message.Mentions 0).ID}}
+	{{end}}
+	{{sendMessage 1291176840966307973 (complexMessage "embed" (cembed "title" "Halloween Donation" "description" (printf "**User:** <@%v> \n **Amount:** %v" $user $amt) "footer" (sdict "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096" "text" (.User.String)) "thumbnail" (sdict "url" "https://i.giphy.com/WmXadcdktUO0WvbmpX.webp")))}}
+{{else}}
+	{{$amt := (index (split $descp "donated") 1)}}
+	{{$amt = (index (split $descp "**") 1)}}
+	{{$emoji := (index (split $amt " ") 1)}}
+	{{$split := split $amt $emoji}}
+	{{$split = joinStr " " (index $split 0) (index $split 1)}}
+	{{$split = split $split "  "}}
+	{{$newamt := joinStr "" (index $split 0) (index $split 1)}}
+	{{$amt = $newamt}}
+	{{$items := $get.Get "items"}}
+	{{if not $items}}{{$items = cslice}}{{end}}
+	{{$items = $items.Append $amt}}
+	{{$get.Set "items" $items}}
+	{{$set := (dbSet 0 "halloweendonos" $get)}}
+	{{sendMessage 1291176840966307973 (complexMessage "embed" (cembed "title" "Halloween Donation" "description" (printf "**User:** <@%v> \n **Amount:** %v" (.Message.Interaction.User.ID) $amt) "footer" (sdict "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096" "text" (.User.String)) "thumbnail" (sdict "url" "https://i.giphy.com/WmXadcdktUO0WvbmpX.webp")))}}
+{{end}}
+
+{{deleteAllMessageReactions nil (.Message.ID)}}
+{{addReactions "green_check2:1291173532432203816"}}

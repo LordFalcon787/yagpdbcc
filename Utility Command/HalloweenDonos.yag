@@ -1,0 +1,84 @@
+{{$get := (dbGet 0 "halloweendonos").Value}}
+{{$items := $get.Get "items"}}
+{{$unknowns := $get.Get "Unknown"}}
+{{$coins := $get.Get "coins"}}
+{{if not $items}}{{$items = cslice}}{{end}}
+{{if not $coins}}{{$coins = cslice}}{{end}}
+
+{{if ge (len .CmdArgs) 2}}
+    {{if not (eq .User.ID 1166134423146729563)}}
+        {{return}}
+    {{end}}
+    {{$action := index .CmdArgs 0}}
+    {{if eq $action "add"}}
+        {{$donation := slice .CmdArgs 1 | joinStr " "}}
+        {{if eq (len .CmdArgs) 2}}
+            {{$coins = $coins.Append $donation}}
+            {{$get.Set "coins" $coins}}
+        {{else}}
+            {{$items = $items.Append $donation}}
+            {{$get.Set "items" $items}}
+        {{end}}
+        {{dbSet 0 "halloweendonos" $get}}
+        Donation added successfully.
+        {{return}}
+    {{else}}
+        Invalid action. Use "add" to add a donation.
+        {{return}}
+    {{end}}
+{{end}}
+
+
+    
+{{$descp := ""}}
+{{$total := 0}}
+{{range $1 := $coins}}
+	{{$reFind := reFindAll "[0-9]" $1}}
+	{{$amt := ""}}
+		{{range $2 := $reFind}}
+		{{$amt = joinStr "" $amt $2}}
+		{{end}}
+	{{$amt = toInt $amt}}
+	{{$total = add $total $amt}}
+{{end}}
+{{$descp = (printf "**__COINS:__** ⏣ %v" (humanizeThousands $total))}}
+{{$desc := ""}}
+{{$des := ""}}
+{{$itemDict := sdict}}
+
+{{range $4 := $items}}
+    {{$quantity := (index (split $4 " ") 0)}}
+    {{if (reFind "," $quantity)}}
+        {{$quantity = reReplace "," $quantity ""}}
+    {{end}}
+    {{$quantity = toInt $quantity}}
+    {{$num := 0}}
+    {{$item := ""}}
+    {{range $5 := (split $4 " ")}}
+        {{if not (eq $num 0)}}
+            {{$item = joinStr " " $item $5}}
+        {{end}}
+        {{$num = add $num 1}}
+    {{end}}
+    {{if $itemDict.HasKey $item}}
+        {{$itemDict.Set $item (add (toInt ($itemDict.Get $item)) (toInt $quantity))}}
+    {{else}}
+        {{$itemDict.Set $item (toInt $quantity)}}
+    {{end}}
+{{end}}
+
+{{range $item, $quantity := $itemDict}}
+    {{$desc = printf "%s`%d` %s\n" $desc $quantity $item}}
+{{end}}
+
+{{$unknownTotal := 0}}
+{{range $unknown := $unknowns}}
+    {{$cleanedUnknown := reReplace "," $unknown ""}}
+    {{$unknownTotal = add $unknownTotal (toInt $cleanedUnknown)}}
+{{end}}
+{{$des = humanizeThousands $unknownTotal}}
+
+
+{{$descp = (printf "%v\n\n**__ITEMS:__**\n%v\n\n**__UNKNOWN:__** ⏣ %v" $descp $desc $des)}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Halloween Event Donations" "description" $descp "thumbnail" (sdict "url" "https://i.imgur.com/iF7I3WC.gif") "image" (sdict "url" "https://i.imgur.com/pSm3QRY.gif") "color" 15954692))}}
+{{deleteTrigger 0}}

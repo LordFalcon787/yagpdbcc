@@ -1,0 +1,49 @@
+{{$get := (dbGet .Channel.ID (printf "poll_%v" .User.ID)).Value}}
+{{if eq (lower .Message.Content) "!poll"}}{{return}}{{end}}
+{{if not $get}}{{return}}{{end}}
+
+{{if or (in (lower (index (split .Message.Content " ") 0)) "don") (.ExecData)}}
+{{deleteTrigger 0}}
+{{deleteMessage nil ((dbGet .Channel.ID (printf "poll_%v_id" .User.ID)).Value) 0}}
+{{$usr := .User}}
+{{$val := (dbGet .Channel.ID (printf "poll_%v" .User.ID)).Value}}
+{{if not $val}}{{return}}{{end}}
+{{$del := (dbDel .Channel.ID (printf "poll_%v" .User.ID))}}
+{{if lt (len $val) 3}}{{print "You must have two or more options."}}{{return}}{{end}}
+{{$pollDict := (dbGet 0 "polls").Value}}
+{{if not $pollDict}}{{$pollDict = sdict}}{{end}}
+{{$buttons := cslice}}
+{{$avatar := print "https://cdn.discordapp.com/avatars/" $usr.ID "/" $usr.Avatar ".png"}}
+{{$title := index $val 0}}
+{{$dict := sdict}}
+{{$cID := ""}}
+{{$sl := cslice}}
+{{range $7 := $val}}{{if not (eq $7 $title)}}{{$sl = $sl.Append $7}}{{end}}{{end}}
+{{$val = $sl}}
+{{range $1 := $val}}
+	{{if not (eq $1 "")}}
+	{{$dict.Set $1 cslice}}
+	{{end}}
+{{end}}
+{{range $2, $3 := $dict}}
+	{{$cID = joinStr "-" "polls" $2}}
+	{{$buttons = $buttons.Append (cbutton "label" (joinStr " " $2 "[0]") "custom_id" $cID)}}
+{{end}}
+{{$id := sendMessageRetID nil (complexMessage "buttons" $buttons "embed" (cembed "title" $title "footer" (sdict "text" (printf "Poll by %v" .User.String) "icon_url" $avatar)))}}
+{{$dict.Set "title" $title}}
+{{$pollDict.Set (str $id) $dict}}
+{{$set := (dbSet 0 "polls" $pollDict)}}
+{{sendResponse nil (complexMessage "ephemeral" true "content" "Poll has been created successfully.")}}
+{{return}}
+{{end}}
+
+{{deleteTrigger 0}}
+{{if eq (index $get 0) "start"}}{{$get = cslice}}{{end}}
+{{if gt (toInt .Message.Content) 0}}{{print "Due to sorting errors, numbers cannot be entered as options. Please use another bot."}}{{$del := (dbDel .Channel.ID (printf "poll_%v" .User.ID))}}{{return}}{{end}}
+{{if in $get .Message.Content}}{{if not (eq (index $get 0) .Message.Content)}}{{$m := sendMessageRetID nil "You cannot have duplicate options."}}{{deleteMessage nil $m 3}}{{$del := (dbDel .Channel.ID (printf "poll_%v" .User.ID))}}{{return}}{{end}}{{end}}
+{{$get = $get.Append (.Message.Content)}}
+{{if eq (len $get) 11}}{{$m := sendMessageRetID nil "Max options reached."}}{{deleteMessage nil $m 3}}{{$set := (dbSetExpire .Channel.ID (printf "poll_%v" .User.ID) $get 60)}}{{execCC 297 nil 0 "done"}}{{return}}{{end}}
+{{$set := (dbSetExpire .Channel.ID (printf "poll_%v" .User.ID) $get 60)}}
+{{$id := sendMessageRetID nil "Please write the next option or if you're done say \"done\""}}
+{{deleteMessage nil ((dbGet .Channel.ID (printf "poll_%v_id" .User.ID)).Value) 0}}
+{{$set2 := (dbSetExpire .Channel.ID (printf "poll_%v_id" .User.ID) (str $id) 60)}}

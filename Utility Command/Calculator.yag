@@ -1,0 +1,36 @@
+{{$input := .Message.Content}}
+{{$input = reReplace `,` $input ""}}
+
+{{$validChars := "0123456789+-*/().^kmbt"}}
+{{$validInput := true}}
+{{range $char := (split $input "")}}
+    {{if not (in $validChars $char)}}
+        {{$validInput = false}}
+    {{end}}
+{{end}}
+
+{{if $validInput}}
+    {{$input = reReplace `(\d+(?:\.\d+)?)(k|m|b|t)` $input (toString (cslice 
+        "k" "* 1000"
+        "m" "* 1000000"
+        "b" "* 1000000000"
+        "t" "* 1000000000000"
+    ))}}
+    {{$result := 0}}
+    {{$error := ""}}
+    {{try}}
+		{{$input}}
+        {{$result = execTemplate "calc" $input}}
+    {{catch}}
+        {{$error = .Error}}
+    {{end}}
+    
+    {{if eq $error ""}}
+        {{$response := printf "Result: %v" (humanizeThousands (toInt $result))}}
+        {{sendMessage nil $response}}
+    {{else}}
+        {{sendMessage nil "Error: Invalid expression. Please check your input."}}
+    {{end}}
+{{else}}
+{{return}}
+{{end}}
