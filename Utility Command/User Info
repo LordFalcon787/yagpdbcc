@@ -1,10 +1,27 @@
-{{/* Trigger Type: Command
-     Trigger: w */}}
-
-{{$args := parseArgs 0 "" (carg "userid" "target")}}
+{{$args := parseArgs 0 "" (carg "string" "target")}}
 {{$usr := .User}}
 
-{{if $args.IsSet 0}}{{$usr = (getMember ($args.Get 0)).User}}{{end}}
+{{if $args.IsSet 0}}
+{{if .Message.Mentions}}
+{{$usr = (getMember ((index .Message.Mentions 0).ID)).User}}
+{{else if eq ($args.Get 0) "gaslighter"}}
+{{$usr = (getMember 1076536674428923904).User}}
+{{else if gt (len (reFindAll "[0-9]" ($args.Get 0))) 17}}
+{{$usr = (getMember ($args.Get 0)).User}}
+{{else}}
+{{$get2 := (dbGet 0 "members").Value}}
+{{$go2 := true}}
+{{range $11, $22 := $get2}}
+	{{if $go2}}
+	{{if inFold $11 ($args.Get 0)}}
+	{{$usr = (getMember $22).User}}
+	{{$go2 = false}}
+	{{end}}
+	{{end}}
+{{end}}
+{{if $go2}}{{sendMessage nil (complexMessage "embed" (cembed "description" "<:red_x:1218287859963007057> No members with the provided name were found." "color" 16711680))}}{{return}}{{end}}
+{{end}}
+{{end}}
 
 {{$embed := sdict}}
 {{$fields := cslice}}
@@ -18,22 +35,23 @@
 	{{$roleslice = $roleslice.Append $1}}
 {{end}}
 
-{{ $avatar := print "https://cdn.discordapp.com/avatars/" $usr.ID "/" $usr.Avatar ".png" }}
+{{$ending := ".png"}}
+{{$reFind := reFind "a_" $usr.Avatar}}
+{{if eq $reFind "a_"}}{{$ending = ".gif"}}{{end}}
+{{ $avatar := print "https://cdn.discordapp.com/avatars/" $usr.ID "/" $usr.Avatar $ending }}
 {{$embed.Set "author" (sdict "name" $usr.String "icon_url" $avatar)}}
 {{$embed.Set "thumbnail" (sdict "url" $avatar)}}
 {{$embed.Set "description" $usr.Mention}}
-{{$joined := (formatTime ($member.JoinedAt.Parse))}}
-{{$created := (formatTime (currentUserCreated))}}
+{{$joined := (formatTime $member.JoinedAt.Parse)}}
+{{$created := (formatTime (snowflakeToTime ($usr.ID)))}}
 {{$roles := ""}}
 {{$perms := ""}}
 {{$designations := ""}}
 
-{{if eq $usr.ID (.User.ID)}}
-	{{$fields = $fields.Append (sdict "name" "Joined At" "value" (toString $joined) "inline" true)}}
-    {{$fields = $fields.Append (sdict "name" "Created At" "value" (toString $created) "inline" true)}}
-{{else}}
-	{{$fields = $fields.Append (sdict "name" "Joined At" "value" (toString $joined) "inline" true)}}
-{{end}}
+
+{{$fields = $fields.Append (sdict "name" "Joined At" "value" (str $joined) "inline" true)}}
+{{$fields = $fields.Append (sdict "name" "Created At" "value" (str $created) "inline" true)}}
+
       
 {{$roledict := dict}}
 {{$dict2 := cslice}}
@@ -45,12 +63,17 @@
 {{end}}
 {{$sort := sort $dict2 (sdict "key" "position" "reverse" true)}}
 
+{{$num := 1}}
 {{range $3 := $sort}}
+	{{if le $num 41}}
 	{{$pos := $3.Get "position"}}
 	{{$rolei := $roledict.Get $pos}}
 	{{$roles = joinStr " " $roles (printf "<@&%v>" $rolei)}}
+	{{$num = (add $num 1)}}
+	{{end}}
 {{end}}
 
+{{if gt (len $roleslice) 41}}{{$roles = joinStr " " $roles (printf "`+%v`" (sub (len $roleslice) 41))}}{{end}}
 {{$fields = $fields.Append (sdict "name" (printf "Roles [%v]" (len $roleslice)) "value" $roles "inline" false)}}
 
 {{$perm := .Permissions}}
@@ -72,6 +95,13 @@
 {{if eq $perms ""}}{{$perms = "None."}}{{end}}
 {{$fields = $fields.Append (sdict "name" "Key Permissions" "value" $perms "inline" false)}}
 
+{{$member := (getMember $usr.ID)}}
+{{if $member.CommunicationDisabledUntil}}
+    {{$timeoutUntil := $member.CommunicationDisabledUntil.Unix}}
+    {{$fields = $fields.Append (sdict "name" "Timed Out" "value" (printf "Removed <t:%d:R>" $timeoutUntil) "inline" false)}}
+{{end}}
+
+
 {{$owner := 1213612442756583494}}
 {{$taco := $owner}}
 {{$gaslighter := $owner}}
@@ -84,16 +114,22 @@
 {{$kman := 1209039929372315670}}
 {{$fstaff := 1205270486439952442}}
 {{$staff := 1205270486469058634}}
+{{$admbot := 1205270486502867026}}
+{{$bot := 1205766258080096346}}
+{{$falcon := 1229120180152700958}}
+{{$spade := 1216384585118646413}}
 
 {{/* Above values can be adjusted to your server's role IDs */}}
 
-{{$desglist := cslice (cslice "Server Owner" $owner) (cslice "Taco" $taco) (cslice "Gaslighter" $gaslighter) (cslice "Server Developer" $serverdev) (cslice "Administrator" $admin) (cslice "Payout Manager" $payoutstaff) (cslice "Head Moderator" $headmod) (cslice "Moderator" $mod) (cslice "Trial Moderator" $tmod) (cslice "Karuta Manager" $kman) (cslice "Former Staff" $fstaff) (cslice "Staff Member" $staff)}}
+{{$desglist := cslice (cslice "Server Owner" $owner) (cslice "Taco" $taco) (cslice "Gaslighter" $gaslighter) (cslice "Server Developer" $serverdev) (cslice "Server Admin" $admin) (cslice "Payout Manager" $payoutstaff) (cslice "Head Moderator" $headmod) (cslice "Moderator" $mod) (cslice "Trial Moderator" $tmod) (cslice "Karuta Manager" $kman) (cslice "Former Staff" $fstaff) (cslice "Staff Member" $staff) (cslice "Admin Bot" $admbot) (cslice "Bot" $bot) (cslice "Commander, Falcon Navy." $falcon) (cslice "Playing Card" $spade)}}
 
 {{range $desg := $desglist}}
 	{{$designation := index $desg 0}}
 	{{$roleid := index $desg 1}}
 	{{if targetHasRoleID $usr.ID $roleid}}
+	{{if not (and (eq $usr.ID 1166134423146729563) (eq $roleid 1205270486469058634))}}
 	{{$designations = joinStr ", " $designations $designation}}
+	{{end}}
 	{{end}}
 {{end}}
 
@@ -128,9 +164,40 @@
 {{$delNumber = (add $delNumber 1)}}
 {{end}}
 
+{{if hasPermissions $perm.ManageMessages}}
 {{$fields = $fields.Append (sdict "name" "Warnings" "value" $warnsList "inline" false)}}
+{{end}}
+
+{{if targetHasRoleID $usr.ID 1205270486469058634}}
+{{$credit := (dbGet 0 "credit_score").Value}}
+{{$pts := "Points"}}
+{{$points := (($credit.Get (str $usr.ID)).Get $pts)}}
+{{if not $points}}{{$points = "0"}}{{end}}
+{{$credits := (sdict "name" "Credit Score" "value" (printf "__Score:__ %v" $points) "inline" false)}}
+{{$fields = $fields.Append $credits}}
+{{end}}
 
 {{$embed.Set "fields" $fields}}
 {{$embed.Set "color" $color}}
-{{$embed.Set "footer" (sdict "text" (printf "ID: %v 	Today at %v" $usr.ID (formatTime currentTime "3:04 PM")))}}
-{{sendMessage nil (complexMessage "embed" (cembed $embed))}}
+{{$embed.Set "footer" (sdict "text" (printf "ID: %v" $usr.ID))}}
+{{$embed.Set "timestamp" currentTime}}
+
+{{$warn := cbutton "label" "Warn User" "custom_id" "buttons-warn"}}
+{{$timeout := cbutton "label" "Timeout User" "custom_id" "buttons-timeout"}}
+{{$ban := cbutton "label" "Ban User" "custom_id" "buttons-ban"}}
+{{$dm := cbutton "label" "DM User" "custom_id" "buttons-dm"}}
+
+{{if not (hasPermissions 8)}}{{$dm = cbutton "label" "DM User" "disabled" true "custom_id" "buttons-dm"}}{{end}}
+{{if not (hasPermissions $perm.ManageRoles)}}{{$ban = cbutton "label" "Ban User" "disabled" true "custom_id" "buttons-ban"}}{{end}}
+{{if targetHasPermissions $usr.ID 8}}
+{{$warn = cbutton "label" "Warn User" "custom_id" "buttons-warn" "disabled" true}}
+{{$timeout = cbutton "label" "Timeout User" "custom_id" "buttons-timeout" "disabled" true}}
+{{$ban = cbutton "label" "Ban User" "custom_id" "buttons-ban" "disabled" true}}
+{{$dm = cbutton "label" "DM User" "custom_id" "buttons-dm" "disabled" true}}
+{{end}}
+
+{{$buttons := cslice $warn $timeout $ban $dm}}
+
+{{if not (hasPermissions $perm.ManageMessages)}}{{$buttons = cslice}}{{end}}
+
+{{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed $embed))}}

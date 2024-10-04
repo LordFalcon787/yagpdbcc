@@ -27,8 +27,10 @@
 {{else if in $descp "Are you sure"}}
 	{{$amt := reFind `You will donate .+` $descp}}
 	{{$amt = reReplace `You will donate ` $amt ""}}
-    {{$amtt = split $amt " "}}
+    {{$amtt := split $amt " "}}
 	{{$amt = reReplace (str (index $amtt 1)) $amt ""}}
+	{{$amt = reReplace `\*` $amt ""}}
+    {{$amt = reReplace "  " $amt " "}}
 	{{$items := $get.Get "items"}}
 	{{if not $items}}{{$items = cslice}}{{end}}
 	{{$items = $items.Append $amt}}

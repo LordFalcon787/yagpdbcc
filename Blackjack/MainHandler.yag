@@ -1,8 +1,3 @@
-{{/*
-    Trigger Type: Command
-    Trigger: bj
- */}}
-
 {{$user := .User}}
 {{$args := parseArgs 1 "Please add how much you want to gamble. e.g. `!bj 15m`"
     (carg "string" "gamble")}}
@@ -22,9 +17,6 @@
 {{sendMessage nil "You have reached the max gambling limit."}}
 {{return}}
 {{end}}
-
-{{$time = (add (toInt $time) 1)}}
-{{$set5 := (dbSetExpire 1205270486230110330 $key2 $time 600)}}
 
 {{$find := reFindAll ",*" ($args.Get 0)}}
 {{if (eq (len $find) 0)}}
@@ -87,11 +79,18 @@
 	{{return}}
 {{end}}
 
-{{if gt $gambleAmt 15000000}}
-	{{sendMessage nil "You can only bet up to 15,000,000."}}
+{{if lt $gambleAmt 10000}}
+	{{sendMessage nil "You must bet more than 10,000."}}
 	{{return}}
 {{end}}
 
+{{if gt $gambleAmt 10000000}}
+	{{sendMessage nil "You can only bet up to 10,000,000."}}
+	{{return}}
+{{end}}
+
+{{$time = (add (toInt $time) 1)}}
+{{$set5 := (dbSetExpire 1205270486230110330 $key2 $time 600)}}
 
 {{$spades := cslice "<:ace_of_spades2:1280309807848493117>" "<:2_of_spades:1280309926673256478>" "<:3_of_spades:1280309930901114982>" "<:4_of_spades:1280310027969757300>" "<:5_of_spades:1280310032885350564>" "<:6_of_spades:1280310080696352798>" "<:7_of_spades:1280310086019055749>" "<:8_of_spades:1280310127521697812>" "<:9_of_spades:1280310132546207765>" "<:10_of_spades:1280310179056848969>" "<:jack_of_spades2:1280309814810906634>" "<:queen_of_spades:1280312524516102144>" "<:king_of_spades2:1280309820272148600>"}}
 {{$hearts := cslice "<:ace_of_hearts:1280310184765427732>" "<:2_of_hearts:1280309925683269673>" "<:3_of_hearts:1280309929877573632>" "<:4_of_hearts:1280310027151736894>" "<:5_of_hearts:1280310031753154629>" "<:6_of_hearts:1280310079597314121>" "<:7_of_hearts:1280310084840460361>" "<:8_of_hearts:1280310126401687633>" "<:9_of_hearts:1280310130985926707>" "<:10_of_hearts:1280310178088226886>" "<:jack_of_hearts2:1280309813427044446>" "<:queen_of_hearts2:1280309826118881385>" "<:king_of_hearts:1280312519545716819>"}}
@@ -120,20 +119,26 @@
 	{{$name1 = "Ace"}}
  {{else if eq $card1amt 11}}
 	{{$name1 = "Jack"}}
+	{{$card1amt = 10}}
  {{else if eq $card1amt 12}}
 	{{$name1 = "Queen"}}
+	{{$card1amt = 10}}
  {{else if eq $card1amt 13}}
 	{{$name1 = "King"}}
+	{{$card1amt = 10}}
  {{end}}
  
  {{if eq $card2amt 1}}
 	{{$name2 = "Ace"}}
  {{else if eq $card2amt 11}}
 	{{$name2 = "Jack"}}
+	{{$card2amt = 10}}
  {{else if eq $card2amt 12}}
 	{{$name2 = "Queen"}}
+	{{$card2amt = 10}}
  {{else if eq $card2amt 13}}
 	{{$name2 = "King"}}
+	{{$card2amt = 10}}
  {{end}}
 
 {{if eq $chance1 0}}
@@ -197,20 +202,26 @@
 	{{$dealername1 = "Ace"}}
  {{else if eq $dealercard1amt 11}}
 	{{$dealername1 = "Jack"}}
+	{{$dealercard1amt = 10}}
  {{else if eq $dealercard1amt 12}}
 	{{$dealername1 = "Queen"}}
+	{{$dealercard1amt = 10}}
  {{else if eq $dealercard1amt 13}}
 	{{$dealername1 = "King"}}
+	{{$dealercard1amt = 10}}
  {{end}}
  
  {{if eq $dealercard2amt 1}}
 	{{$dealername2 = "Ace"}}
  {{else if eq $dealercard2amt 11}}
 	{{$dealername2 = "Jack"}}
+	{{$dealercard2amt = 10}}
  {{else if eq $dealercard2amt 12}}
 	{{$dealername2 = "Queen"}}
+	{{$dealercard2amt = 10}}
  {{else if eq $dealercard2amt 13}}
 	{{$dealername2 = "King"}}
+	{{$dealercard2amt = 10}}
  {{end}}
 
 {{if eq $dealerchance1 0}}
@@ -364,10 +375,13 @@
 	{{$card3amt = 11}}
  {{else if eq $card3amt 11}}
 	{{$name1 = "Jack"}}
+	{{$card3amt = 10}}
  {{else if eq $card3amt 12}}
 	{{$name1 = "Queen"}}
+	{{$card3amt = 10}}
  {{else if eq $card3amt 13}}
 	{{$name1 = "King"}}
+	{{$card3amt = 10}}
  {{end}}
  
 {{if eq $chance1 0}}
@@ -398,10 +412,13 @@
 	{{$dealercard3amt = 11}}
  {{else if eq $dealercard3amt 11}}
 	{{$name1 = "Jack"}}
+	{{$dealercard3amt = 10}}
  {{else if eq $dealercard3amt 12}}
 	{{$name1 = "Queen"}}
+	{{$dealercard3amt = 10}}
  {{else if eq $dealercard3amt 13}}
 	{{$name1 = "King"}}
+	{{$dealercard3amt = 10}}
  {{end}}
  
 {{if eq $chance1 0}}
@@ -444,439 +461,9 @@
 {{end}}
 
 {{$buttons := cslice $hit $stop}}
-{{$cset := (dbSetExpire $usr "blackjack" "novalue" 60)}}
+{{$cset2 := (dbSetExpire $usr "blackjack" "novalue" 120)}}
 {{editMessage nil $mID (complexMessageEdit "buttons" $buttons "embed" (cembed "title" $title "description" $descp))}}
 {{if $stopc}}
 	{{return}}
 {{end}}
-
 {{execCC 231 nil 0 (cslice $mID $card1 $card2 $card3 $card1amt $card2amt $card3amt $card1name $card2name $card3name $dealercard1 $dealercard2 $dealercard3 $dealercard1amt $dealercard2amt $dealercard3amt $dealercard1name $dealercard2name $dealercard3name $dealertotal $total $gambleAmt)}}
-
-{{/*The code below is for CC 231, change the above number depending on your CC*/}}
-
-{{$spades := (dbGet 1234 "spades").Value}}
-{{$hearts := (dbGet 1234 "hearts").Value}}
-{{$diamonds := (dbGet 1234 "diamonds").Value}}
-{{$clubs := (dbGet 1234 "clubs").Value}}
-{{$types := cslice $spades $hearts $diamonds $clubs}}
-{{$usr := .User.ID}}
-{{$hit := cbutton "label" "Hit" "custom_id" "buttons-bjhit"}}
-{{$stop := cbutton "label" "Stop" "custom_id" "buttons-bjstop"}}
-
-
-{{$slice := .ExecData}}
-{{$mID := index $slice 0}}{{$card1 := index $slice 1}}{{$card2 := index $slice 2}}{{$card3 := index $slice 3}}{{$card1amt := index $slice 4}}{{$card2amt := index $slice 5}}{{$card3amt := index $slice 6}}{{$card1name := index $slice 7}}{{$card2name := index $slice 8}}{{$card3name := index $slice 9}}{{$dealercard1 := index $slice 10}}{{$dealercard2 := index $slice 11}}{{$dealercard3 := index $slice 12}}{{$dealercard1amt := index $slice 13}}{{$dealercard2amt := index $slice 14}}{{$dealercard3amt := index $slice 15}}{{$dealercard1name := index $slice 16}}{{$dealercard2name := index $slice 17}}{{$dealercard3name := index $slice 18}}{{$dealertotal := index $slice 19}}{{$total := index $slice 20}}{{$gambleAmt := index $slice 21}}
-
-{{$str1 := "blackjackbal"}}
-{{$str2 := (str $usr)}}
-{{$key := joinStr "" $str1 $str2}}
-{{$pool := (toInt ((dbGet 1205270486230110330 "gamblepool").Value))}}
-{{$usramt := (toInt ((dbGet 1205270486230110330 $key).Value))}}
-
-{{$get := (dbGet $usr "blackjack").Value}}
-{{$add := 0}}
-{{$title := (printf "%v's blackjack session" (.User.String))}}
-
-{{while (eq $get "novalue")}}
-{{if eq $add 20}}
-{{$hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit"}}
-{{$stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop"}}
-{{$buttons := cslice $hit $stop}}
-{{editMessage nil $mID (complexMessageEdit "buttons" $buttons "embed" (cembed "title" "~~Timed Out~~" "color" 16711680))}}
-{{return}}
-{{end}}
-{{sleep 1}}
-{{$get = (dbGet $usr "blackjack").Value}}
-{{$add = (add 1 $add)}}
-{{end}}
-
-{{$descp := ""}}
-
-
-{{$get = (dbGet $usr "blackjack").Value}}
-{{$add = 0}}
-
-{{if eq $get "stop"}}
-	{{ $hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$descp = (printf "\n # %v %v %v \n\n You got the **%v**, **%v**, and **%v** which totals `%v` \n# %v %v %v \n\n The dealer got the **%v**, **%v** and **%v** which totals `%v`" $card1 $card2 $card3 $card1name $card2name $card3name $total $dealercard1 $dealercard2 $dealercard3 $dealercard1name $dealercard2name $dealercard3name $dealertotal)}}
-	{{if gt $dealertotal 21}}
-		{{if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You and the dealer both had the same number so you lost all your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if and (gt $dealertotal 21) (gt $total 21)}}
-		{{$descp = (printf "%v \n\n You and the dealer both went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if gt $total 21}}
-		{{$descp = (printf "%v \n\n You went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if and (lt $total 21) (gt $dealertotal 21)}}
-		{{$descp = (printf "%v \n\n The dealer went over 21 so you won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}
-	{{end}}
-	{{if and (eq $total 21) (not (eq $dealertotal 21))}}
-	{{$descp = (printf "%v \n\n You got exactly 21 and tripled your bet!" $descp)}}
-	{{$pool = (sub $pool (mult 3 $gambleAmt))}}
-	{{$usramt = (add $usramt (mult 3 $gambleAmt))}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}
-	{{if and (lt $total 21) (lt $dealertotal 21)}}
-		{{if gt $dealertotal $total}}
-		{{$descp = (printf "%v \n\n The dealer got more than you and you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You got the same amount as the dealer and lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else}}
-		{{$descp = (printf "%v \n\n You got more than the dealer and won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "buttons" (cslice $hit $stop) "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}
-{{end}}
-
-{{$chance1 := randInt 4}}
-{{$chance3 := randInt 13}}
-{{$card4type := (index $types ($chance1))}}
-{{$card4 := (index $card4type ($chance3))}}
-
-{{$card4amt := (add 1 $chance3)}}
-{{$name1 := str $card4amt}}
-{{$type1 := ""}}
-
-{{if eq $card4amt 1}}
-	{{$name1 = "Ace"}}
-	{{$card4amt = 11}}
- {{else if eq $card4amt 11}}
-	{{$name1 = "Jack"}}
- {{else if eq $card4amt 12}}
-	{{$name1 = "Queen"}}
- {{else if eq $card4amt 13}}
-	{{$name1 = "King"}}
- {{end}}
- 
-{{if eq $chance1 0}}
-	{{$type1 = "spades"}}
-{{else if eq $chance1 1}}
-	{{$type1 = "hearts"}}
-{{else if eq $chance1 2}}
-	{{$type1 = "diamonds"}}
-{{else if eq $chance1 3}}
-	{{$type1 = "clubs"}}
-{{end}}
-
-{{$card4name := (joinStr " of " $name1 $type1)}}
-{{$total = (add $card1amt $card2amt $card3amt $card4amt)}}
-
-{{$chance1 = randInt 4}}
-{{$chance3 = randInt 13}}
-{{$dealercard4type := (index $types ($chance1))}}
-{{$dealercard4 := (index $dealercard4type ($chance3))}}
-
-{{$dealercard4amt := (add 1 $chance3)}}
-{{$name1 = str $dealercard4amt}}
-{{$type1 = ""}}
-
-{{if eq $dealercard4amt 1}}
-	{{$name1 = "Ace"}}
-	{{$dealercard4amt = 11}}
- {{else if eq $dealercard4amt 11}}
-	{{$name1 = "Jack"}}
- {{else if eq $dealercard4amt 12}}
-	{{$name1 = "Queen"}}
- {{else if eq $dealercard4amt 13}}
-	{{$name1 = "King"}}
- {{end}}
- 
-{{if eq $chance1 0}}
-	{{$type1 = "spades"}}
-{{else if eq $chance1 1}}
-	{{$type1 = "hearts"}}
-{{else if eq $chance1 2}}
-	{{$type1 = "diamonds"}}
-{{else if eq $chance1 3}}
-	{{$type1 = "clubs"}}
-{{end}}
-
-
-{{$dealercard4name := (joinStr " of " $name1 $type1)}}
-{{$dealertotal = (add $dealercard1amt $dealercard2amt $dealercard3amt $dealercard4amt)}}
-
-{{$descp = (printf "\n # %v %v %v %v \n\n You got the **%v**, **%v**, **%v** and **%v** which totals **%v** \n# %v ? \n\n The dealer got the **%v** and `?` which totals `%v + ?`" $card1 $card2 $card3 $card4 $card1name $card2name $card3name $card4name $total $dealercard1 $dealercard1name $dealercard1amt)}}
-
-{{$stopc := false}}
-{{if gt $total 21}}
-	{{$descp = (printf "%v\n\nYou went over 21 so you lost all your bet." $descp)}}
-	{{ $hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$stopc = true}}
-	{{$pool = (add $pool $gambleAmt)}}
-	{{$usramt = (sub $usramt $gambleAmt)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-{{else if eq $total 21}}
-	{{$descp = (printf "%v\n\nYou got exactly 21! You tripled your bet!" $descp)}}
-	{{ $hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$stopc = true}}
-	{{$pool = (sub $pool (mult 3 $gambleAmt))}}
-	{{$usramt = (add $usramt (mult 3 $gambleAmt))}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-{{end}}
-
-
-{{$buttons := cslice $hit $stop}}
-{{$cset := (dbSetExpire $usr "blackjack" "novalue" 60)}}
-{{editMessage nil $mID (complexMessageEdit "buttons" $buttons "embed" (cembed "title" $title "description" $descp))}}
-{{if $stopc}}
-	{{return}}
-{{end}}
-
-{{$get = (dbGet $usr "blackjack").Value}}
-{{while (eq $get "novalue")}}
-{{if eq $add 20}}
-{{$hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit"}}
-{{$stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop"}}
-{{$buttons = cslice $hit $stop}}
-{{editMessage nil $mID (complexMessageEdit "buttons" $buttons "embed" (cembed "title" "~~Timed Out~~" "color" 16711680))}}
-{{return}}
-{{end}}
-{{sleep 1}}
-{{$get = (dbGet $usr "blackjack").Value}}
-{{$add = (add 1 $add)}}
-{{end}}
-
-{{if eq $get "stop"}}
-	{{ $hit := cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop := cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$descp = (printf "\n # %v %v %v %v \n\n You got the **%v**, **%v**, **%v**, and **%v** which totals `%v` \n# %v %v %v %v \n\n The dealer got the **%v**, **%v**, **%v**, and **%v** which totals `%v`" $card1 $card2 $card3 $card4 $card1name $card2name $card3name $card4name $total $dealercard1 $dealercard2 $dealercard3 $dealercard4 $dealercard1name $dealercard2name $dealercard3name $dealercard4name $dealertotal)}}
-	{{if gt $dealertotal 21}}
-		{{if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You and the dealer both had the same number so you lost all your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if and (gt $dealertotal 21) (gt $total 21)}}
-		{{$descp = (printf "%v \n\n You and the dealer both went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}		
-		{{else if gt $total 21}}
-		{{$descp = (printf "%v \n\n You went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}		
-		{{else if and (lt $total 21) (gt $dealertotal 21)}}
-		{{$descp = (printf "%v \n\n The dealer went over 21 so you won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}		
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}
-	{{end}}
-	{{if and (eq $total 21) (not (eq $dealertotal 21))}}
-	{{$descp = (printf "%v \n\n You got exactly 21 and tripled your bet!" $descp)}}
-	{{$pool = (add $pool (mult 3 $gambleAmt))}}
-	{{$usramt = (sub $usramt (mult 3 $gambleAmt))}}		
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}
-	{{if and (lt $total 21) (lt $dealertotal 21)}}
-		{{if gt $dealertotal $total}}
-		{{$descp = (printf "%v \n\n The dealer got more than you and you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}		
-		{{else if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You got the same amount as the dealer and lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}		
-		{{else}}
-		{{$descp = (printf "%v \n\n You got more than the dealer and won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}		
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "buttons" (cslice $hit $stop) "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}
-{{end}}
-
-{{$chance1 := randInt 4}}
-{{$chance3 := randInt 13}}
-{{$card5type := (index $types ($chance1))}}
-{{$card5 := (index $card5type ($chance3))}}
-
-{{$card5amt := (add 1 $chance3)}}
-{{$name1 := str $card5amt}}
-{{$type1 := ""}}
-
-{{if eq $card5amt 1}}
-	{{$name1 = "Ace"}}
-	{{$card5amt = 11}}
- {{else if eq $card5amt 11}}
-	{{$name1 = "Jack"}}
- {{else if eq $card5amt 12}}
-	{{$name1 = "Queen"}}
- {{else if eq $card5amt 13}}
-	{{$name1 = "King"}}
- {{end}}
- 
-{{if eq $chance1 0}}
-	{{$type1 = "spades"}}
-{{else if eq $chance1 1}}
-	{{$type1 = "hearts"}}
-{{else if eq $chance1 2}}
-	{{$type1 = "diamonds"}}
-{{else if eq $chance1 3}}
-	{{$type1 = "clubs"}}
-{{end}}
-
-{{$card5name := (joinStr " of " $name1 $type1)}}
-{{$total = (add $card1amt $card2amt $card3amt $card4amt $card5amt)}}
-
-{{$chance1 = randInt 4}}
-{{$chance3 = randInt 13}}
-{{$dealercard5type := (index $types ($chance1))}}
-{{$dealercard5 := (index $dealercard5type ($chance3))}}
-
-{{$dealercard5amt := (add 1 $chance3)}}
-{{$name1 = str $dealercard5amt}}
-{{$type1 = ""}}
-
-{{if eq $dealercard5amt 1}}
-	{{$name1 = "Ace"}}
-	{{$dealercard5amt = 11}}
- {{else if eq $dealercard5amt 11}}
-	{{$name1 = "Jack"}}
- {{else if eq $dealercard5amt 12}}
-	{{$name1 = "Queen"}}
- {{else if eq $dealercard5amt 13}}
-	{{$name1 = "King"}}
- {{end}}
- 
-{{if eq $chance1 0}}
-	{{$type1 = "spades"}}
-{{else if eq $chance1 1}}
-	{{$type1 = "hearts"}}
-{{else if eq $chance1 2}}
-	{{$type1 = "diamonds"}}
-{{else if eq $chance1 3}}
-	{{$type1 = "clubs"}}
-{{end}}
-
-
-{{$dealercard5name := (joinStr " of " $name1 $type1)}}
-{{$dealertotal = (add $dealercard1amt $dealercard2amt $dealercard3amt $dealercard4amt $dealercard5amt)}}
-
-{{$stopc = false}}
-{{if gt $total 21}}
-	{{$descp = (printf "%v\n\nYou went over 21 so you lost all your bet." $descp)}}
-	{{ $hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$stopc = true}}
-	{{$pool = (add $pool $gambleAmt)}}
-	{{$usramt = (sub $usramt $gambleAmt)}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-{{else if eq $total 21}}
-	{{$descp = (printf "%v\n\nYou got exactly 21! You tripled your bet!" $descp)}}
-	{{ $hit = cbutton "label" "Hit" "disabled" true "custom_id" "buttons-bjhit" }}
-	{{ $stop = cbutton "label" "Stop" "disabled" true "custom_id" "buttons-bjstop" }}
-	{{$stopc = true}}
-	{{$pool = (sub $pool (mult 3 $gambleAmt))}}
-	{{$usramt = (add $usramt (mult 3 $gambleAmt))}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-{{end}}
-
-{{if $stopc}}
-	{{return}}
-{{end}}
-
-
-{{$descp = (printf "\n # %v %v %v %v %v \n\n You got the **%v**, **%v**, **%v**, **%v**, and **%v** which totals `%v` \n# %v %v %v %v %v \n\n The dealer got the **%v**, **%v**, **%v**, **%v**, and **%v** which totals `%v`" $card1 $card2 $card3 $card4 $card5 $card1name $card2name $card3name $card4name $card5name $total $dealercard1 $dealercard2 $dealercard3 $dealercard4 $dealercard5 $dealercard1name $dealercard2name $dealercard3name $dealercard4name $dealercard5name $dealertotal)}}
-	{{if gt $dealertotal 21}}
-		{{if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You and the dealer both had the same number so you lost all your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if and (gt $dealertotal 21) (gt $total 21)}}
-		{{$descp = (printf "%v \n\n You and the dealer both went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if gt $total 21}}
-		{{$descp = (printf "%v \n\n You went over 21 so you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if and (lt $total 21) (gt $dealertotal 21)}}
-		{{$descp = (printf "%v \n\n The dealer went over 21 so you won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}
-	{{end}}
-	{{if and (eq $total 21) (not (eq $dealertotal 21))}}
-	{{$descp = (printf "%v \n\n You got exactly 21 and tripled your bet!" $descp)}}
-	{{$pool = (sub $pool (mult 3 $gambleAmt))}}
-	{{$usramt = (add $usramt (mult 3 $gambleAmt))}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}
-	{{if and (lt $total 21) (lt $dealertotal 21)}}
-		{{if gt $dealertotal $total}}
-		{{$descp = (printf "%v \n\n The dealer got more than you and you lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else if eq $dealertotal $total}}
-		{{$descp = (printf "%v \n\n You got the same amount as the dealer and lost your bet." $descp)}}
-		{{$pool = (add $pool $gambleAmt)}}
-		{{$usramt = (sub $usramt $gambleAmt)}}
-		{{else}}
-		{{$descp = (printf "%v \n\n You got more than the dealer and won your bet!" $descp)}}
-		{{$pool = (sub $pool $gambleAmt)}}
-		{{$usramt = (add $usramt $gambleAmt)}}
-		{{end}}
-	{{$set := (dbSetExpire 1205270486230110330 $key $usramt 600)}}
-	{{$set2 := (dbSet 1205270486230110330 "gamblepool" $pool)}}
-	{{$descp = (printf "%v\n\n The new pool balance is ⏣ %v and your new user balance is ⏣ %v" $descp "`ADMIN ONLY`" (humanizeThousands $usramt))}}
-	{{editMessage nil $mID (complexMessageEdit "buttons" (cslice $hit $stop) "embed" (cembed "title" $title "description" $descp))}}
-	{{return}}	
-	{{end}}

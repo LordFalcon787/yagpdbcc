@@ -1,0 +1,91 @@
+{{$allowed := cslice ".mcredit" "-mcredit" "!mcredit"}}
+{{if not (in $allowed (lower (index (split .Message.Content " ") 0)))}}{{return}}{{end}}
+
+{{$credit := (dbGet 0 "modcredit").Value}}
+{{if not $credit}}{{$credit = sdict}}{{end}}
+
+{{if in .CmdArgs "lb"}}
+    {{$leaderboard := sdict}}
+    {{range $id, $data := $credit}}
+        {{$points := toInt ($data.Get "points")}}
+        {{$leaderboard.Set $id $points}}
+    {{end}}
+    
+    {{$sorted := sort $leaderboard "value" "desc"}}
+    {{$descp := ""}}
+    {{range $i, $entry := $sorted}}
+        {{$descp = printf "%s\n%d. <@%s> - %d Point(s)" $descp (add $i 1) $entry.Key $entry.Value}}
+    {{end}}
+    
+    {{if eq $descp ""}}{{$descp = "No valid entries were found."}}{{end}}
+    {{$embed := cembed 
+        "title" "Mod Credit Leaderboard" 
+        "description" $descp 
+        "color" 14540253 
+        "thumbnail" (sdict "url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096")
+        "footer" (sdict "text" "Action monitoring is enabled." "icon_url" "https://cdn.discordapp.com/icons/1205270486230110330/f746bd8ccde4545818b80133872adc4e.webp?size=4096")
+        "timestamp" currentTime
+    }}
+    {{sendMessage nil (complexMessage "embed" $embed)}}
+    {{return}}
+{{end}}
+
+{{if or (in .CmdArgs "add") (in .CmdArgs "remove")}}
+    {{if not (hasPermissions 8)}}{{addReactions "red_x:1218287859963007057"}}{{return}}{{end}}
+    {{$args := parseArgs 3 "Usage: <add|remove> <user> <amount>" (carg "string" "action") (carg "userid" "user") (carg "int" "amount")}}
+    {{$user := $args.Get 1}}
+    {{$amt := $args.Get 2}}
+    {{$action := $args.Get 0}}
+    
+    {{$userCredit := $credit.Get (str $user)}}
+    {{if not $userCredit}}{{$userCredit = sdict "Bonus" 0 "points" 0}}{{end}}
+    
+    {{if eq $action "add"}}
+        {{$userCredit.Set "Bonus" (add ($userCredit.Get "Bonus") $amt)}}
+        {{$userCredit.Set "points" (add ($userCredit.Get "points") $amt)}}
+    {{else}}
+        {{$userCredit.Set "Bonus" (sub ($userCredit.Get "Bonus") $amt)}}
+        {{$userCredit.Set "points" (sub ($userCredit.Get "points") $amt)}}
+    {{end}}
+    
+    {{$credit.Set (str $user) $userCredit}}
+    {{dbSet 0 "modcredit" $credit}}
+    {{addReactions "green_check:1218286675508199434"}}
+    {{return}}
+{{end}}
+
+{{$args := parseArgs 0 "" (carg "userid" "id")}}
+{{$usr := if $args.IsSet 0}}str ($args.Get 0){{else}}str .User.ID{{end}}
+{{$user := (getMember $usr).User}}
+{{$userCredit := $credit.Get $usr}}
+
+{{$points := 0}}
+{{$actions := "None"}}
+{{$position := "N/A"}}
+
+{{if $userCredit}}
+    {{$points = $userCredit.Get "points"}}
+    {{$actionList := sdict $userCredit}}
+    {{$actionList.Del "points"}}
+    {{$actions = joinStr " / " (slice (cslice.AppendSlice (range $actionList)) 0 -1)}}
+    
+    {{$sortedCredits := sort $credit "value.points" "desc"}}
+    {{range $i, $entry := $sortedCredits}}
+        {{if eq $entry.Key $usr}}
+            {{$position = add $i 1}}
+            {{break}}
+        {{end}}
+    {{end}}
+{{end}}
+
+{{$avatar := printf "https://cdn.discordapp.com/avatars/%s/%s.%s" $usr $user.Avatar (if (reFind "a_" $user.Avatar) "gif" "png")}}
+
+{{$embed := cembed 
+    "title" "Mod Credit Report" 
+    "description" (printf "**Target:** <@%s>\n**Position:** %v\n**Score:** %d\n**Actions:** %s" $usr $position $points $actions)
+    "color" 14540253 
+    "thumbnail" (sdict "url" $avatar)
+    "footer" (sdict "text" "Action monitoring is enabled." "icon_url" $avatar)
+    "timestamp" currentTime
+}}
+{{sendMessage nil (complexMessage "embed" $embed)}}
