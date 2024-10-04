@@ -1,119 +1,120 @@
 {{if in .CmdArgs "info"}}
-{{$args := parseArgs 2 "You must append a valid role to look at." (carg "string" "string") (carg "string" "str")}}
-{{$name := $args.Get 1}}
-{{$roles := .Guild.Roles}}
-{{$slice := cslice}}
-{{range $1 := $roles}}
-	{{$slice = $slice.Append (toInt ((jsonToSdict (json ($1))).Get "id"))}}
-{{end}}
-{{$g := .Guild}}
-{{$roles = $slice}}
-{{$slice = cslice}}
-{{$role := false}}
-{{$bool := false}}
-{{range $2 := $roles}}
+	{{$args := parseArgs 2 "You must append a valid role to look at." (carg "string" "string") (carg "string" "str")}}
+	{{$name := $args.Get 1}}
+	{{$roles := .Guild.Roles}}
+	{{$slice := cslice}}
+	{{range $1 := $roles}}
+		{{$slice = $slice.Append (toInt ((jsonToSdict (json ($1))).Get "id"))}}
+	{{end}}
+	{{$g := .Guild}}
+	{{$roles = $slice}}
+	{{$slice = cslice}}
+	{{$role := false}}
+	{{$bool := false}}
+	{{range $2 := $roles}}
+		{{if not $bool}}
+		{{$get := (jsonToSdict (json ($g.GetRole $2))).Get "name"}}
+		{{if eq (sanitizeText (lower $get)) (lower $name)}}
+		{{$bool = true}}
+		{{$role = $2}}
+		{{end}}
+		{{end}}
+	{{end}}
+	
 	{{if not $bool}}
-	{{$get := (jsonToSdict (json ($g.GetRole $2))).Get "name"}}
-	{{if eq (sanitizeText (lower $get)) (lower $name)}}
-	{{$bool = true}}
-	{{$role = $2}}
+		{{range $3 := $roles}}
+		{{if not $bool}}
+		{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "name"}}
+		{{if in (lower $get) (lower $name)}}
+		{{$bool = true}}
+		{{$role = $3}}
+		{{end}}
+		{{end}}
+		{{end}}
 	{{end}}
-	{{end}}
-{{end}}
-
-{{if not $bool}}
-	{{range $3 := $roles}}
+	
 	{{if not $bool}}
-	{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "name"}}
-	{{if in (lower $get) (lower $name)}}
-	{{$bool = true}}
-	{{$role = $3}}
+		{{range $3 := $roles}}
+		{{if not $bool}}
+		{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "id"}}
+		{{if eq (toInt $get) (toInt $name)}}
+		{{$bool = true}}
+		{{$role = $3}}
+		{{end}}
+		{{end}}
+		{{end}}
 	{{end}}
-	{{end}}
-	{{end}}
-{{end}}
-
-{{if not $bool}}
-	{{range $3 := $roles}}
+	
 	{{if not $bool}}
-	{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "id"}}
-	{{if eq (toInt $get) (toInt $name)}}
-	{{$bool = true}}
-	{{$role = $3}}
+		{{$name = (index (split $name " ") 0)}}
+		{{range $3 := $roles}}
+		{{if not $bool}}
+		{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "name"}}
+		{{if in (lower $get) (lower $name)}}
+		{{$bool = true}}
+		{{$role = $3}}
+		{{end}}
+		{{end}}
+		{{end}}
 	{{end}}
-	{{end}}
-	{{end}}
-{{end}}
-
-{{if not $bool}}
-	{{$name = (index (split $name " ") 0)}}
-	{{range $3 := $roles}}
+	
 	{{if not $bool}}
-	{{$get := (jsonToSdict (json ($g.GetRole $3))).Get "name"}}
-	{{if in (lower $get) (lower $name)}}
-	{{$bool = true}}
-	{{$role = $3}}
+		{{sendMessage nil (complexMessage "embed" (cembed "description" "<:red_x:1218287859963007057> No roles with the provided name were found."))}}
+		{{return}}                   
 	{{end}}
+	
+	{{$embed := sdict}}
+	{{$embed.Set "title" "Role info"}}
+	{{$role = (jsonToSdict (json ($g.GetRole $role)))}}
+	{{$color := (split (humanizeThousands ($role.Get "color")) ",")}}
+	{{$scolor := ""}}
+	{{range $5 := $color}}
+		{{$scolor = joinStr "" $scolor $5}}
 	{{end}}
+	
+	{{if not (eq (toInt $scolor) 0)}}
+	{{$dec := (toInt $scolor)}}
+	{{$hex := ""}}
+	{{$remainder := 0}}
+	{{$hex_characters := cslice `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `A` `B` `C` `D` `E` `F`}}
+		{{- while gt $dec 0 -}}
+			{{- $remainder = (mod $dec 16) -}}
+			{{- $hex = (joinStr "" (index $hex_characters (toInt $remainder)) $hex)}}
+		   {{- $dec = (div $dec 16) -}}
+		{{- end -}}
+	{{$scolor = $hex}}
+	{{else}}
+	{{$scolor = "00000"}}
 	{{end}}
-{{end}}
-
-{{if not $bool}}
-	{{sendMessage nil (complexMessage "embed" (cembed "description" "<:red_x:1218287859963007057> No roles with the provided name were found."))}}
-    {{return}}                   
-{{end}}
-
-{{$embed := sdict}}
-{{$embed.Set "title" "Role info"}}
-{{$role = (jsonToSdict (json ($g.GetRole $role)))}}
-{{$color := (split (humanizeThousands ($role.Get "color")) ",")}}
-{{$scolor := ""}}
-{{range $5 := $color}}
-	{{$scolor = joinStr "" $scolor $5}}
-{{end}}
-
-{{if not (eq (toInt $scolor) 0)}}
-{{$dec := (toInt $scolor)}}
-{{$hex := ""}}
-{{$remainder := 0}}
-{{$hex_characters := cslice `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `A` `B` `C` `D` `E` `F`}}
-    {{- while gt $dec 0 -}}
-        {{- $remainder = (mod $dec 16) -}}
-        {{- $hex = (joinStr "" (index $hex_characters (toInt $remainder)) $hex)}}
-       {{- $dec = (div $dec 16) -}}
-    {{- end -}}
-{{$scolor = $hex}}
-{{else}}
-{{$scolor = "00000"}}
-{{end}}
-{{if eq $scolor "FF"}}{{$scolor = "0000ff"}}{{end}}
-
-{{$embed.Set "color" ($role.Get "color")}}
-{{$sperms := ($role.Get "permissions")}}
-{{$perms := ""}}
-{{$perm := .Permissions}}
-{{$permlist := cslice (cslice "Administrator" $perm.Administrator) (cslice "Manage Messages" $perm.ManageMessages) (cslice "Manage Roles" $perm.ManageRoles) (cslice "Manage Threads" $perm.ManageThreads) (cslice "Manage Server" $perm.ManageServer) (cslice "Manage Channels" $perm.ManageChannels) (cslice "Manage Webhooks" $perm.ManageWebhooks) (cslice "Mention Roles and Everyone" $perm.MentionEveryone) (cslice "Manage Expressions" $perm.ManageEmojis) (cslice "Manage Nicknames" $perm.ManageNicknames) (cslice "Ban Members" $perm.BanMembers) (cslice "Kick Members" $perm.KickMembers) (cslice "Timeout Members" $perm.ModerateMembers)}}
-{{range $6 := $permlist}}
-	{{$pname := index $6 0}}
-	{{$pnum := index $6 1}}
-	{{if not (eq (bitwiseAnd $sperms $pnum) 0)}}
-	{{$perms = joinStr ", " $perms (str $pname)}}
+	{{if eq $scolor "FF"}}{{$scolor = "0000ff"}}{{end}}
+	
+	{{$embed.Set "color" ($role.Get "color")}}
+	{{$sperms := ($role.Get "permissions")}}
+	{{$perms := ""}}
+	{{$perm := .Permissions}}
+	{{$permlist := cslice (cslice "Administrator" $perm.Administrator) (cslice "Manage Messages" $perm.ManageMessages) (cslice "Manage Roles" $perm.ManageRoles) (cslice "Manage Threads" $perm.ManageThreads) (cslice "Manage Server" $perm.ManageServer) (cslice "Manage Channels" $perm.ManageChannels) (cslice "Manage Webhooks" $perm.ManageWebhooks) (cslice "Mention Roles and Everyone" $perm.MentionEveryone) (cslice "Manage Expressions" $perm.ManageEmojis) (cslice "Manage Nicknames" $perm.ManageNicknames) (cslice "Ban Members" $perm.BanMembers) (cslice "Kick Members" $perm.KickMembers) (cslice "Timeout Members" $perm.ModerateMembers)}}
+	{{range $6 := $permlist}}
+		{{$pname := index $6 0}}
+		{{$pnum := index $6 1}}
+		{{if not (eq (bitwiseAnd $sperms $pnum) 0)}}
+		{{$perms = joinStr ", " $perms (str $pname)}}
+		{{end}}
 	{{end}}
-{{end}}
-{{if eq $perms ""}}{{$perms = "No Dangerous Permissions."}}{{end}}
-
-{{if ($role.Get "icon")}}
-{{$id := $role.Get "id"}}
-{{$hash := $role.Get "icon"}}
-{{$embed.Set "thumbnail" (sdict "url" (printf "https://cdn.discordapp.com/role-icons/%v/%v.png" $id $hash))}}
-{{end}}
-
-{{$embed.Set "description" (printf "Name: %v\nColor: #%v\nPerms: %v\nCreated on <t:%v:f>" ($role.Get "name") ($scolor) $perms (snowflakeToTime ($role.Get "id")).Unix)}}
-{{$embed.Set "footer" (sdict "text" (printf "ID: %v" ($role.Get "id")))}}
-{{if ($role.Get "icon")}}
-{{$id := $role.Get "id"}}
-{{$hash := $role.Get "icon"}}
-{{(($embed.Get "footer").Set) ("url" (printf "https://cdn.discordapp.com/role-icons/%v/%v.png" $id $hash))}}
-{{end}}
-{{sendMessage nil (complexMessage "embed" (cembed $embed))}}
-{{end}}
+	{{if eq $perms ""}}{{$perms = "No Dangerous Permissions."}}{{end}}
+	
+	{{if ($role.Get "icon")}}
+	{{$id := $role.Get "id"}}
+	{{$hash := $role.Get "icon"}}
+	{{$embed.Set "thumbnail" (sdict "url" (printf "https://cdn.discordapp.com/role-icons/%v/%v.png" $id $hash))}}
+	{{end}}
+	
+	
+	{{$embed.Set "description" (printf "Name: %v\nColor: #%v\nPerms: %v\nCreated on <t:%v:f>" ($role.Get "name") ($scolor) $perms (snowflakeToTime ($role.Get "id")).Unix)}}
+	{{$embed.Set "footer" (sdict "text" (printf "ID: %v" ($role.Get "id")))}}
+	{{if ($role.Get "icon")}}
+	{{$id := $role.Get "id"}}
+	{{$hash := $role.Get "icon"}}
+	{{(($embed.Get "footer").Set) ("url" (printf "https://cdn.discordapp.com/role-icons/%v/%v.png" $id $hash))}}
+	{{end}}
+	{{sendMessage nil (complexMessage "embed" (cembed $embed))}}
+	{{end}}
